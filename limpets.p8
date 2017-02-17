@@ -198,7 +198,7 @@ function states.play:update()
   local x = states.play.x
   local y = states.play.y
   if(states.play.object==nil)then
-		 if(states.play.grabbed==true and item.x > x-4 and item.x < x+4 and item.y > y-4 and item.y < y+4)then
+		 if(states.play.grabbed==true and item.x > x-6 and item.x < x+6 and item.y > y-12 and item.y < y-8)then
 				states.play.object=item
 			end
 		end
