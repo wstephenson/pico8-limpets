@@ -191,6 +191,13 @@ function states.play:update()
  x=clamp(x,0,120)
  y=clamp(y,0,120)
 
+ -- object release
+ if(not states.play.grabbed and states.play.object)then
+  states.play.object.x=states.play.x
+  states.play.object.y=states.play.y-8
+		states.play.object=nil
+ end
+
  -- collision detection
 	for item in all(states.play.objects) do
   -- is it within the grab area
