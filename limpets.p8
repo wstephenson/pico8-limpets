@@ -22,6 +22,7 @@ states.play.typos=false
 states.play.grabbed=false
 states.play.object=nil
 states.play.stars={}
+states.play.particles={}
 objtimer=0
 
 tinc=0.05
@@ -80,7 +81,7 @@ function states.play:draw()
  if(flr(objtimer)%2==0)then
   lcolor = 14
  end
- line(64,128,64+sin((objtimer%100)/100)*20,12+cos((objtimer%100)/100)*5,lcolor)
+ line(64,128,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
 
  -- drone
  spr(1, states.play.x-8, states.play.y)
@@ -136,11 +137,18 @@ function states.play:draw()
 		end
  end
 
+ -- particles
+	for p in all(states.play.particles) do
+		line(p.x,p.y,p.x-p.xv,p.y-p.yv,p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8))
+	end
+
  -- debug
- print("vx:"..states.play.vx, 0, 100, 7)
- print("vy:"..states.play.vy, 45, 100, 7)
- print("tx:"..states.play.tx, 0, 107, 7)
- print("ty:"..states.play.ty, 45, 107, 7)
+ if(false) then
+		print("vx:"..states.play.vx, 0, 100, 7)
+		print("vy:"..states.play.vy, 45, 100, 7)
+		print("tx:"..states.play.tx, 0, 107, 7)
+		print("ty:"..states.play.ty, 45, 107, 7)
+	end
 end
 
 function states.play:update()
@@ -227,16 +235,23 @@ function states.play:update()
  -- spawn rocks
 	objtimer+=1
 
+ local laserx=64+sin((objtimer%100)/100)*20
+	local lasery=8+cos((objtimer%100)/100)*5
  if(objtimer % 20 == 0)then
   newobj={}
-  newobj.x=rnd(16)+56
-  newobj.y=0
+  newobj.x=laserx
+  newobj.y=lasery
   newobj.vx=rnd(1.2)-1
   newobj.vy=rnd(1.66)+0.33
   newobj.c=rnd(6)
   add(states.play.objects,newobj)
+  make_explosion(newobj,newobj.vx,newobj.vy)
  end
 
+-- laser burn trace
+ if(objtimer % 2 == 0)then
+		add(states.play.particles,{x=laserx,y=lasery,xv=0,yv=0,ttl=10})
+ end
  -- move objects
 	for item in all(states.play.objects) do
 		item.x += item.vx
@@ -275,6 +290,17 @@ function states.play:update()
  states.play.x = x
  states.play.y = y
  states.play.grabbed = grabbed
+
+	for p in all(states.play.particles) do
+		p.x += p.xv
+		p.y += p.yv
+		p.xv *= 0.95
+		p.yv *= 0.95
+		p.ttl -= 1
+		if p.ttl < 0 then
+			del(states.play.particles,p)
+		end
+	end
 end
 
 function update_state()
@@ -282,6 +308,21 @@ function update_state()
 	if(next_state)then
 		state=next_state
 	end
+end
+
+function make_explosion(point,xv,yv)
+	xv=xv or 0
+	yv=yv or 0
+	for i=1,8 do
+		add(states.play.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20})
+	end
+end
+
+function age_transient(transient,array)
+	transient.ttl-=1
+		if transient.ttl < 0 then
+			del(array,transient)
+		end
 end
 
 function clamp(val,minv,maxv)
