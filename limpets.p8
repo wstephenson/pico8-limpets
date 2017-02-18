@@ -371,11 +371,8 @@ function states.play:update()
 		p.y += p.yv
 		p.xv *= 0.95
 		p.yv *= 0.95
-		p.ttl -= 1
-		if p.ttl < 0 then
-			del(self.particles,p)
-		end
 	end
+	age_transients(self.particles)
 end
 
 function states.play:make_explosion(point,xv,yv)
