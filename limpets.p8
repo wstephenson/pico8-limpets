@@ -147,7 +147,7 @@ function states.play:draw()
 	rect(126,126,127,127-self.health/100*127,8)
 
  -- debug
-	if(true) then
+	if(false) then
 		print("vx:"..self.vx, 0, 100, 7)
 		print("vy:"..self.vy, 45, 100, 7)
 		print("tx:"..self.tx, 0, 107, 7)
@@ -257,10 +257,11 @@ function states.play:update()
 		self:make_explosion(newobj,newobj.vx,newobj.vy)
 	end
 
--- laser burn trace
+	-- laser burn trace
 	if(objtimer % 2 == 0)then
 		add(self.particles,{x=laserx,y=lasery,xv=0,yv=0,ttl=10})
 	end
+
 	-- move objects
 	for item in all(self.objects) do
 		item.x += item.vx
