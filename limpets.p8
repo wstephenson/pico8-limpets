@@ -31,6 +31,8 @@ function states.play:init()
 	self.shldx=64
 	self.shldy=160
 	self.shldr=64
+	self.lorigx = 40
+	self.lorigy = 115
 	self.laserx=0
 	self.lasery=0
 	self.laserson=7
@@ -108,22 +110,19 @@ function states.play:draw()
 	circ(self.shldx, self.shldy, self.shldr, shield_color)
 
 	-- mining laser
-	local lorigx = 40
-	local lorigy = 115
-
 	if(self:laser_on()) then
 		local lcolor = 2
 		if(flr(objtimer)%2==0)then
 			lcolor = 14
 		end
-		line(lorigx,lorigy,self.laserx,self.lasery,lcolor)
+		line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
 	end
 
 	-- laser indicator
 	if (self.laser>0)then
-		line(lorigx,126,lorigx,117+(self.laser/(self.laserson*30))*10,12)
+		line(self.lorigx,126,self.lorigx,117+(self.laser/(self.laserson*30))*10,12)
 	else
-		line(lorigx,126,lorigx,117-(self.laser/(self.lasersoff*30))*10,2)
+		line(self.lorigx,126,self.lorigx,117-(self.laser/(self.lasersoff*30))*10,2)
 	end
 
 	-- drone
@@ -326,6 +325,18 @@ function states.play:update()
 		if(objtimer % 2 == 0)then
 			add(self.particles,{x=self.laserx,y=self.lasery,xv=0,yv=0,ttl=10})
 		end
+
+		-- has laser hit limpet?
+		local hit
+		local hx
+		local hy
+		hit,hx,hy=self:laser_hit()
+		if(hit)then
+			if(objtimer % 3 == 0)then
+				self:make_explosion({x=hx,y=hy},0,0)
+				self:laser_damage()
+			end
+		end
 	end
 
 	-- move objects
@@ -430,6 +441,19 @@ function states.play:in_scoop()
 	return (self.x>60 and self.x<68 and self.y>114 and self.y<122)
 end
 
+function states.play:laser_hit()
+	p0={x=self.x+1,y=self.y}
+	p1={x=self.x+6,y=self.y}
+	p2={x=self.x+6,y=self.y+7}
+	p3={x=self.x+1,y=self.y+7}
+	drone_hit_box={p0,p1,p2,p3}
+	return line_intersects_convex_poly(self.lorigx,self.lorigy,self.laserx,self.lasery,drone_hit_box)
+end
+
+function states.play:laser_damage()
+	self.health-=2
+end
+
 function states.play:laser_on()
 	return self.laser > 0
 end
@@ -459,6 +483,45 @@ end
 
 function clamp(val,minv,maxv)
 	return max(minv,min(val,maxv))
+end
+
+function line_intersects_convex_poly(x1,y1,x2,y2,poly)
+	-- returns bool,x,y (hit, one point of intersection if hit)
+	local hit
+	local hitx
+	local hity
+	local point1
+	local point2
+	for i=1,count(poly) do
+		if i<count(poly) then
+			point1 = poly[i]
+			point2 = poly[i+1]
+		else
+			point1 = poly[i]
+			point2 = poly[1]
+		end
+		hit,hitx,hity=line_intersects_line(x1,y1,x2,y2,point1.x,point1.y,point2.x,point2.y)
+		if hit then return hit,hitx,hity end
+	end
+	return false,0,0
+end
+
+function line_intersects_line(x0,y0,x1,y1,x2,y2,x3,y3)
+	local s
+	local t
+	local s1x = x1-x0
+	local s1y = y1-y0
+	local s2x = x3-x2
+	local s2y = y3-y2
+	local denom=-s2x*s1y+s1x*s2y
+	s=(-s1y*(x0-x2)+s1x*(y0-y2))/denom
+	t=(s2x*(y0-y2)-s2y*(x0-x2))/denom
+	if(s>=0 and s<=1 and t>=0 and t<=1) then
+		-- intersection!
+		return true,x0+t*s1x,y0+t*s1y
+	else
+		return false,0,0
+	end
 end
 
 function _init()
