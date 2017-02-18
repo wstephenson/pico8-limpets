@@ -31,8 +31,8 @@ function states.play:init()
 	self.shldx=64
 	self.shldy=160
 	self.shldr=64
-	self.x=64
-	self.y=64
+	self.x=72
+	self.y=108
 	self.vx=0
 	self.vy=0
 	self.tx=0
@@ -48,6 +48,7 @@ function states.play:init()
 	self.particles={}
 	self.burn_decals={}
 	self.health=100
+	self.score=0
 
 	self.objects={}
 	self.stars={}
@@ -87,6 +88,7 @@ function states.play:draw()
 
 	-- ship hull
 	rectfill(32,116,96,127,6)
+	rectfill(56,116,72,124,0)
 	spr(22,80,108)
 	spr(23,88,108)
 	local shield_color=1
@@ -174,6 +176,8 @@ function states.play:draw()
 		print("tx:"..self.tx, 0, 107, 7)
 		print("ty:"..self.ty, 45, 107, 7)
 		print("h:"..self.health, 0, 114, 7)
+	else
+		print("s:"..self.score, 80, 120, 10)
 	end
 end
 
@@ -315,11 +319,18 @@ function states.play:update()
 
 	-- object release
 	if(not self.grabbed and self.object)then
-		self.object.x=self.x
-		self.object.y=self.y-10
-		self.object.vx=self.vx
-		self.object.vy=self.vy-0.5
-		self.object=nil
+		-- in scoop?
+		if (self.x>60 and self.x<68 and self.y>114 and self.y<122)then
+			self:do_score(self.object)
+			del(self.objects,self.object)
+			self.object=nil
+		else
+			self.object.x=self.x
+			self.object.y=self.y-10
+			self.object.vx=self.vx
+			self.object.vy=self.vy-0.5
+			self.object=nil
+		end
 	end
 
 	-- collision detection
@@ -376,6 +387,11 @@ end
 
 function states.play:consume_fuel()
 	self.health-=0.33
+end
+
+function states.play:do_score(item)
+	self.score+=1
+	self.health=min(self.health+5,100)
 end
 
 function states.play:hit_shield(item)
