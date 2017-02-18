@@ -28,6 +28,9 @@ function states.play:init()
 	tmax=1
 	maxv=3
 	self.next_state="menu"
+	self.shldx=64
+	self.shldy=160
+	self.shldr=64
 	self.x=64
 	self.y=64
 	self.vx=0
@@ -82,8 +85,16 @@ function states.play:draw()
 		palt()
 	end
 
-	-- ship
+	-- ship hull
 	rectfill(32,116,96,127,6)
+	spr(22,80,108)
+	spr(23,88,108)
+	local shield_color=1
+	if(self.shldf)then
+		shield_color=12
+		self.shldf=false
+	end
+	circ(self.shldx, self.shldy, self.shldr, shield_color)
 
 	-- mining laser
 	local lcolor = 2
@@ -286,8 +297,17 @@ function states.play:update()
 	for item in all(self.objects) do
 		item.x += item.vx
 		item.y += item.vy
+		local dead=false
+		if(self:hit_shield(item) and item!=self.object) then
+			self.shldf=true
+			dead=true
+		end
 		if(item.y>128)then
+			dead=true
+		end
+		if(dead)then
 			del(self.objects,item)
+			self:make_explosion(item,item.vx,-item.vy)
 		end
 	end
 
@@ -354,6 +374,12 @@ end
 
 function states.play:consume_fuel()
 	self.health-=0.33
+end
+
+function states.play:hit_shield(item)
+	local i_off_x=item.x-self.shldx
+	local i_off_y=item.y-self.shldy
+	return((i_off_x*i_off_x + i_off_y*i_off_y) < (self.shldr * self.shldr))
 end
 
 function update_state()
