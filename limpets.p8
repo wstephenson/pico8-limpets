@@ -82,7 +82,7 @@ function states.play:draw()
 	if(flr(objtimer)%2==0)then
 	lcolor = 14
 	end
-	line(64,128,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
+	line(40,116,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
 
 	-- drone
 	spr(1, states.play.x-8, states.play.y)
