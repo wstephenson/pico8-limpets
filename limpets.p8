@@ -88,6 +88,10 @@ function states.play:draw()
 
 	-- ship hull
 	rectfill(32,116,96,127,6)
+	if(self:in_scoop() and self.object)then
+		rect(54,116,74,126,3)
+		rect(55,116,73,125,11)
+	end
 	rectfill(56,116,72,124,0)
 	spr(22,80,108)
 	spr(23,88,108)
@@ -96,6 +100,7 @@ function states.play:draw()
 		shield_color=12
 		self.shldf=false
 	end
+
 	circ(self.shldx, self.shldy, self.shldr, shield_color)
 
 	-- mining laser
@@ -321,7 +326,7 @@ function states.play:update()
 	-- object release
 	if(not self.grabbed and self.object)then
 		-- in scoop?
-		if (self.x>60 and self.x<68 and self.y>114 and self.y<122)then
+		if (self:in_scoop())then
 			self:do_score(self.object)
 			del(self.objects,self.object)
 			self.object=nil
@@ -396,6 +401,10 @@ function states.play:hit_shield(item)
 	local i_off_x=item.x-self.shldx
 	local i_off_y=item.y-self.shldy
 	return((i_off_x*i_off_x + i_off_y*i_off_y) < (self.shldr * self.shldr))
+end
+
+function states.play:in_scoop()
+	return (self.x>60 and self.x<68 and self.y>114 and self.y<122)
 end
 
 function update_state()
