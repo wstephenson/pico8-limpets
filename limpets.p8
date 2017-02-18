@@ -9,28 +9,8 @@ states={}
 --default states
 states.menu={}
 states.play={}
-states.play.x=64
-states.play.y=64
-states.play.vx=0
-states.play.vy=0
-states.play.tx=0
-states.play.ty=0
-states.play.txneg=false
-states.play.txpos=false
-states.play.tyneg=false
-states.play.typos=false
-states.play.grabbed=false
-states.play.object=nil
-states.play.stars={}
-states.play.particles={}
-states.play.health=100
+--global event timer
 objtimer=0
-
-tinc=0.05
-tdec=tinc*2
-tmax=1
-maxv=3
---drag=v/12
 
 function states.menu:init()
 	self.next_state="play"
@@ -43,31 +23,51 @@ function states.menu:update()
 end
 
 function states.play:init()
+	tinc=0.05
+	tdec=tinc*2
+	tmax=1
+	maxv=3
 	self.next_state="menu"
-	states.play.objects={}
-	states.play.stars={}
+	self.x=64
+	self.y=64
+	self.vx=0
+	self.vy=0
+	self.tx=0
+	self.ty=0
+	self.txneg=false
+	self.txpos=false
+	self.tyneg=false
+	self.typos=false
+	self.grabbed=false
+	self.object=nil
+	self.stars={}
+	self.particles={}
+	self.health=100
 
-	local testrock={}
-	testrock.x = 64
-	testrock.y = 32
-	testrock.vx = 0
-	testrock.vy = 0
-	testrock.c = 0
-	add(states.play.objects,testrock)
+	self.objects={}
+	self.stars={}
+
+	--local testrock={}
+	--testrock.x = 64
+	--testrock.y = 32
+	--testrock.vx = 0
+	--testrock.vy = 0
+	--testrock.c = 0
+	--add(self.objects,testrock)
 
 	for i=1,100 do
 		local star = {}
 		star.x = rnd(128)
 		star.y = rnd(128)
-	add(states.play.stars,star)
+		add(self.stars,star)
 	end
 end
 
 function states.play:draw()
 	cls()
 	-- stars
-	for i=1,#states.play.stars do
-	local star=states.play.stars[i]
+	for i=1,#self.stars do
+	local star=self.stars[i]
 		line(star.x,star.y,star.x,star.y,(objtimer*i%2==0) and 12 or 1)
 	end
 
@@ -80,90 +80,90 @@ function states.play:draw()
 	-- mining laser
 	local lcolor = 2
 	if(flr(objtimer)%2==0)then
-	lcolor = 14
+		lcolor = 14
 	end
 	line(40,116,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
 
 	-- drone
-	spr(1, states.play.x-8, states.play.y)
-	spr(2, states.play.x, states.play.y)
-	spr(3, states.play.x+8, states.play.y)
+	spr(1, self.x-8, self.y)
+	spr(2, self.x, self.y)
+	spr(3, self.x+8, self.y)
 
 	-- grabbed object
-	if(states.play.object != nil)then
-	spr(16+states.play.object.c,states.play.x,states.play.y-8)
+	if(self.object != nil)then
+	spr(16+self.object.c,self.x,self.y-8)
 	end
 
 	-- grabber
-	if(states.play.grabbed)then
-	spr(15, states.play.x, states.play.y-8)
+	if(self.grabbed)then
+	spr(15, self.x, self.y-8)
 	else
-	spr(14, states.play.x, states.play.y-8)
+	spr(14, self.x, self.y-8)
 	end	
 
 	-- thrust
 	local toff=0
 	local tmin=0.001
 	local tbig=tmax*0.66
-	if(states.play.txneg)then
-		if(abs(states.play.tx)>tbig) then
+	if(self.txneg)then
+		if(abs(self.tx)>tbig) then
 			toff=5
 		end
-		spr(4+toff,states.play.x+8, states.play.y)
+		spr(4+toff,self.x+8, self.y)
 	end
-	if(states.play.txpos)then
-		if(abs(states.play.tx)>tbig) then
+	if(self.txpos)then
+		if(abs(self.tx)>tbig) then
 			toff=5
 		end
-		spr(5+toff,states.play.x-8, states.play.y)
+		spr(5+toff,self.x-8, self.y)
 	end
-	if(states.play.tyneg)then
-		if(abs(states.play.ty)>tbig) then
+	if(self.tyneg)then
+		if(abs(self.ty)>tbig) then
 			toff=5
 		end
-		spr(8+toff,states.play.x, states.play.y+8)
+		spr(8+toff,self.x, self.y+8)
 	end
-	if(states.play.typos)then
-		if(abs(states.play.ty)>tbig) then
+	if(self.typos)then
+		if(abs(self.ty)>tbig) then
 			toff=5
 		end
-		spr(6+toff,states.play.x-8, states.play.y)
-		spr(7+toff,states.play.x+8, states.play.y)
+		spr(6+toff,self.x-8, self.y)
+		spr(7+toff,self.x+8, self.y)
 	end
 
 	-- other objects
-	for item in all(states.play.objects)do
-		if(item != states.play.object) then
+	for item in all(self.objects)do
+		if(item != self.object) then
 			spr(16+item.c, item.x, item.y)
 		end
 	end
 
  -- particles
-	for p in all(states.play.particles) do
+	for p in all(self.particles) do
 		line(p.x,p.y,p.x-p.xv,p.y-p.yv,p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8))
 	end
 
  -- health
-	rect(126,126,127,127-states.play.health/100*127,8)
+	rect(126,126,127,127-self.health/100*127,8)
 
  -- debug
 	if(true) then
-		print("vx:"..states.play.vx, 0, 100, 7)
-		print("vy:"..states.play.vy, 45, 100, 7)
-		print("tx:"..states.play.tx, 0, 107, 7)
-		print("ty:"..states.play.ty, 45, 107, 7)
-		print("h:"..states.play.health, 0, 114, 7)
+		print("vx:"..self.vx, 0, 100, 7)
+		print("vy:"..self.vy, 45, 100, 7)
+		print("tx:"..self.tx, 0, 107, 7)
+		print("ty:"..self.ty, 45, 107, 7)
+		print("h:"..self.health, 0, 114, 7)
 	end
 end
 
 function states.play:update()
-	local tx = states.play.tx
-	local ty = states.play.ty
-	local vx = states.play.vx
-	local vy = states.play.vy
-	local x = states.play.x
-	local y = states.play.y
-	local grabbed = states.play.grabbed
+	local tx = self.tx
+	local ty = self.ty
+	local vx = self.vx
+	local vy = self.vy
+	local x = self.x
+	local y = self.y
+	local grabbed = self.grabbed
 
 	-- controls
 	if(btnp(4)) then
@@ -209,10 +209,10 @@ function states.play:update()
 	end
 
 	-- set thruster flags
-	states.play.txneg = txneg
-	states.play.txpos = txpos
-	states.play.tyneg = tyneg
-	states.play.typos = typos
+	self.txneg = txneg
+	self.txpos = txpos
+	self.tyneg = tyneg
+	self.typos = typos
 	-- apply acceleration
 	vx+=tx
 	vy+=ty
@@ -243,79 +243,87 @@ function states.play:update()
 	local laserx=64+sin((objtimer%100)/100)*20
 	local lasery=8+cos((objtimer%100)/100)*5
 	if(objtimer % 20 == 0)then
-		newobj={}
+		local newobj={}
 		newobj.x=laserx
 		newobj.y=lasery
-		newobj.vx=rnd(1.2)-1
-		newobj.vy=rnd(1.66)+0.33
+		newobj.vx=rnd(1)-0.5
+		newobj.vy=rnd(1)+0.2
 		newobj.c=rnd(6)
-		add(states.play.objects,newobj)
-		make_explosion(newobj,newobj.vx,newobj.vy)
+		add(self.objects,newobj)
+		self:make_explosion(newobj,newobj.vx,newobj.vy)
 	end
 
 -- laser burn trace
 	if(objtimer % 2 == 0)then
-		add(states.play.particles,{x=laserx,y=lasery,xv=0,yv=0,ttl=10})
+		add(self.particles,{x=laserx,y=lasery,xv=0,yv=0,ttl=10})
 	end
 	-- move objects
-	for item in all(states.play.objects) do
+	for item in all(self.objects) do
 		item.x += item.vx
 		item.y += item.vy
 		if(item.y>128)then
-			del(states.play.objects,item)
+			del(self.objects,item)
 		end
 	end
 
 	-- object release
-	if(not states.play.grabbed and states.play.object)then
-		states.play.object.x=states.play.x
-		states.play.object.y=states.play.y-10
-		states.play.object.vx=states.play.vx
-		states.play.object.vy=states.play.vy-0.5
-		states.play.object=nil
+	if(not self.grabbed and self.object)then
+		self.object.x=self.x
+		self.object.y=self.y-10
+		self.object.vx=self.vx
+		self.object.vy=self.vy-0.5
+		self.object=nil
 	end
 
 	-- collision detection
-	for item in all(states.play.objects) do
+	for item in all(self.objects) do
 		-- is it within the grab area
 		-- the grab area is 8 pixels above the drone +- 4
-		local x = states.play.x
-		local y = states.play.y
-		if(states.play.object==nil)then
-			if(states.play.grabbed==true and item.x > x-6 and item.x < x+6 and item.y > y-12 and item.y < y-8)then
-				states.play.object=item
+		local x = self.x
+		local y = self.y
+		if(self.object==nil)then
+			if(self.grabbed==true and item.x > x-6 and item.x < x+6 and item.y > y-12 and item.y < y-8)then
+				self.object=item
 			end
 		end
 		-- crashes
-		if(item!=states.play.object)then
+		if(item!=self.object)then
 			if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
-				do_damage(item)
-				-- if(states.play.health<0)then
+				self.health-=do_damage(item,self)
+				-- if(self.health<0)then
 				-- 	do_death()
 				-- end
-				make_explosion(item,item.vx,item.vy)
-				del(states.play.objects,item)
+				self:make_explosion(item,item.vx,item.vy)
+				del(self.objects,item)
 			end
 		end
 	end
 
-	states.play.tx = tx
-	states.play.ty = ty
-	states.play.vx = vx
-	states.play.vy = vy
-	states.play.x = x
-	states.play.y = y
-	states.play.grabbed = grabbed
+	self.tx = tx
+	self.ty = ty
+	self.vx = vx
+	self.vy = vy
+	self.x = x
+	self.y = y
+	self.grabbed = grabbed
 
-	for p in all(states.play.particles) do
+	for p in all(self.particles) do
 		p.x += p.xv
 		p.y += p.yv
 		p.xv *= 0.95
 		p.yv *= 0.95
 		p.ttl -= 1
 		if p.ttl < 0 then
-			del(states.play.particles,p)
+			del(self.particles,p)
 		end
+	end
+end
+
+function states.play:make_explosion(point,xv,yv)
+	xv=xv or 0
+	yv=yv or 0
+	for i=1,8 do
+		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20})
 	end
 end
 
@@ -326,19 +334,11 @@ function update_state()
 	end
 end
 
-function do_damage(object)
-	local dx=object.vx-states.play.vx
-	local dy=object.vy-states.play.vy
+function do_damage(o1,o2)
+	local dx=o1.vx-o2.vx
+	local dy=o1.vy-o2.vy
 	local vsquared=(dx*dx+dy*dy)
-	states.play.health-=vsquared*5
-end
-
-function make_explosion(point,xv,yv)
-	xv=xv or 0
-	yv=yv or 0
-	for i=1,8 do
-		add(states.play.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20})
-	end
+	return vsquared*5
 end
 
 function age_transient(transient,array)
