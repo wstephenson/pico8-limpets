@@ -23,6 +23,7 @@ states.play.grabbed=false
 states.play.object=nil
 states.play.stars={}
 states.play.particles={}
+states.play.health=100
 objtimer=0
 
 tinc=0.05
@@ -141,6 +142,9 @@ function states.play:draw()
 	for p in all(states.play.particles) do
 		line(p.x,p.y,p.x-p.xv,p.y-p.yv,p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8))
 	end
+
+ -- health
+ rect(126,126,127,127-states.play.health/100*127,8)
 
  -- debug
  if(false) then
