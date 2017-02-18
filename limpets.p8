@@ -38,6 +38,7 @@ function states.play:init()
 	self.txpos=false
 	self.tyneg=false
 	self.typos=false
+	self.grabber_cooldown=0
 	self.grabbed=false
 	self.object=nil
 	self.stars={}
@@ -166,9 +167,19 @@ function states.play:update()
 	local grabbed = self.grabbed
 
 	-- controls
-	if(btnp(4)) then
-		grabbed = not grabbed 
+	if(btn(4)) then
+		if(not grabbed and self.grabber_cooldown==0) then
+			grabbed = true
+			self.grabber_cooldown=30
+		end
+	else
+		grabbed = false
 	end
+
+	if(self.grabber_cooldown>0) then
+		self.grabber_cooldown-=1
+	end
+
 	if(btn(0)) then
 		self:consume_fuel()
 		tx=max(tx-tinc, -tmax)
@@ -243,7 +254,6 @@ function states.play:update()
 
 	-- spawn rocks
 	objtimer+=1
-
 	local laserx=64+sin((objtimer%100)/100)*20
 	local lasery=8+cos((objtimer%100)/100)*5
 	if(objtimer % 20 == 0)then
