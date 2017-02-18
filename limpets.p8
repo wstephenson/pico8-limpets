@@ -43,6 +43,7 @@ function states.play:init()
 	self.object=nil
 	self.stars={}
 	self.particles={}
+	self.burn_decals={}
 	self.health=100
 
 	self.objects={}
@@ -74,6 +75,9 @@ function states.play:draw()
 
 	-- asteroid
 	circfill(64,-64,80,5)
+	for i in all(self.burn_decals) do
+		spr(24,i.x,i.y)
+	end
 
 	-- ship
 	rectfill(32,116,96,127,6)
@@ -165,6 +169,8 @@ function states.play:update()
 	local x = self.x
 	local y = self.y
 	local grabbed = self.grabbed
+
+	age_transients(self.burn_decals)
 
 	-- controls
 	if(btn(4)) then
@@ -264,6 +270,7 @@ function states.play:update()
 		newobj.vy=rnd(1)+0.2
 		newobj.c=rnd(6)
 		add(self.objects,newobj)
+		add(self.burn_decals,{x=laserx,y=lasery,ttl=15})
 		self:make_explosion(newobj,newobj.vx,newobj.vy)
 	end
 
