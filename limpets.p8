@@ -76,7 +76,10 @@ function states.play:draw()
 	-- asteroid
 	circfill(64,-64,80,5)
 	for i in all(self.burn_decals) do
+		palt(0,false)
+		palt(5,true)
 		spr(24,i.x,i.y)
+		palt()
 	end
 
 	-- ship
@@ -262,7 +265,7 @@ function states.play:update()
 	objtimer+=1
 	local laserx=64+sin((objtimer%100)/100)*20
 	local lasery=8+cos((objtimer%100)/100)*5
-	if(objtimer % 20 == 0)then
+	if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
 		local newobj={}
 		newobj.x=laserx
 		newobj.y=lasery
@@ -270,7 +273,7 @@ function states.play:update()
 		newobj.vy=rnd(1)+0.2
 		newobj.c=rnd(6)
 		add(self.objects,newobj)
-		add(self.burn_decals,{x=laserx,y=lasery,ttl=15})
+		add(self.burn_decals,{x=laserx-4,y=lasery-4,ttl=15})
 		self:make_explosion(newobj,newobj.vx,newobj.vy)
 	end
 
@@ -367,11 +370,13 @@ function do_damage(o1,o2)
 	return vsquared*5
 end
 
-function age_transient(transient,array)
-	transient.ttl-=1
-		if transient.ttl < 0 then
-			del(array,transient)
-		end
+function age_transients(transient_array)
+	for t in all(transient_array) do
+		t.ttl-=1
+			if t.ttl < 0 then
+				del(transient_array,t)
+			end
+	end
 end
 
 function clamp(val,minv,maxv)
