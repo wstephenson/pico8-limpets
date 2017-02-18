@@ -44,99 +44,99 @@ end
 
 function states.play:init()
 	self.next_state="menu"
- states.play.objects={}
- states.play.stars={}
+	states.play.objects={}
+	states.play.stars={}
 
- local testrock={}
- testrock.x = 64
- testrock.y = 32
- testrock.vx = 0
- testrock.vy = 0
- testrock.c = 0
- add(states.play.objects,testrock)
+	local testrock={}
+	testrock.x = 64
+	testrock.y = 32
+	testrock.vx = 0
+	testrock.vy = 0
+	testrock.c = 0
+	add(states.play.objects,testrock)
 
- for i=1,100 do
+	for i=1,100 do
 		local star = {}
 		star.x = rnd(128)
 		star.y = rnd(128)
-  add(states.play.stars,star)
+	add(states.play.stars,star)
 	end
 end
 
 function states.play:draw()
- cls()
- -- stars 
- for i=1,#states.play.stars do
- 	local star=states.play.stars[i]
+	cls()
+	-- stars
+	for i=1,#states.play.stars do
+	local star=states.play.stars[i]
 		line(star.x,star.y,star.x,star.y,(objtimer*i%2==0) and 12 or 1)
- end 
-   
- -- asteroid
- circfill(64,-64,80,5)
+	end
 
- -- ship 
- rectfill(32,116,96,127,6)
+	-- asteroid
+	circfill(64,-64,80,5)
 
- -- mining laser
- local lcolor = 2
- if(flr(objtimer)%2==0)then
-  lcolor = 14
- end
- line(64,128,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
+	-- ship
+	rectfill(32,116,96,127,6)
 
- -- drone
- spr(1, states.play.x-8, states.play.y)
- spr(2, states.play.x, states.play.y)
- spr(3, states.play.x+8, states.play.y)
+	-- mining laser
+	local lcolor = 2
+	if(flr(objtimer)%2==0)then
+	lcolor = 14
+	end
+	line(64,128,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
 
- -- grabbed object
- if(states.play.object != nil)then
-  spr(16+states.play.object.c,states.play.x,states.play.y-8)
- end
+	-- drone
+	spr(1, states.play.x-8, states.play.y)
+	spr(2, states.play.x, states.play.y)
+	spr(3, states.play.x+8, states.play.y)
 
- -- grabber
- if(states.play.grabbed)then
- 	spr(15, states.play.x, states.play.y-8)
+	-- grabbed object
+	if(states.play.object != nil)then
+	spr(16+states.play.object.c,states.play.x,states.play.y-8)
+	end
+
+	-- grabber
+	if(states.play.grabbed)then
+	spr(15, states.play.x, states.play.y-8)
 	else
- 	spr(14, states.play.x, states.play.y-8)
+	spr(14, states.play.x, states.play.y-8)
 	end	
 
- -- thrust
+	-- thrust
 	local toff=0
- local tmin=0.001
- local tbig=tmax*0.66
- if(states.play.txneg)then
+	local tmin=0.001
+	local tbig=tmax*0.66
+	if(states.play.txneg)then
 		if(abs(states.play.tx)>tbig) then
-   toff=5
+			toff=5
 		end
 		spr(4+toff,states.play.x+8, states.play.y)
 	end
- if(states.play.txpos)then
+	if(states.play.txpos)then
 		if(abs(states.play.tx)>tbig) then
-   toff=5
+			toff=5
 		end
 		spr(5+toff,states.play.x-8, states.play.y)
 	end
- if(states.play.tyneg)then
+	if(states.play.tyneg)then
 		if(abs(states.play.ty)>tbig) then
-   toff=5
+			toff=5
 		end
 		spr(8+toff,states.play.x, states.play.y+8)
 	end
- if(states.play.typos)then
+	if(states.play.typos)then
 		if(abs(states.play.ty)>tbig) then
-   toff=5
+			toff=5
 		end
 		spr(6+toff,states.play.x-8, states.play.y)
 		spr(7+toff,states.play.x+8, states.play.y)
 	end
 
- -- other objects
- for item in all(states.play.objects)do
-  if(item != states.play.object) then
-   spr(16+item.c, item.x, item.y)
+	-- other objects
+	for item in all(states.play.objects)do
+		if(item != states.play.object) then
+			spr(16+item.c, item.x, item.y)
 		end
- end
+	end
 
  -- particles
 	for p in all(states.play.particles) do
@@ -144,10 +144,10 @@ function states.play:draw()
 	end
 
  -- health
- rect(126,126,127,127-states.play.health/100*127,8)
+	rect(126,126,127,127-states.play.health/100*127,8)
 
  -- debug
- if(false) then
+	if(false) then
 		print("vx:"..states.play.vx, 0, 100, 7)
 		print("vy:"..states.play.vy, 45, 100, 7)
 		print("tx:"..states.play.tx, 0, 107, 7)
@@ -156,136 +156,136 @@ function states.play:draw()
 end
 
 function states.play:update()
- local tx = states.play.tx
- local ty = states.play.ty
- local vx = states.play.vx
- local vy = states.play.vy
- local x = states.play.x
- local y = states.play.y
- local grabbed = states.play.grabbed
+	local tx = states.play.tx
+	local ty = states.play.ty
+	local vx = states.play.vx
+	local vy = states.play.vy
+	local x = states.play.x
+	local y = states.play.y
+	local grabbed = states.play.grabbed
 
- -- controls
- if(btnp(4)) then
- 	grabbed = not grabbed 
+	-- controls
+	if(btnp(4)) then
+		grabbed = not grabbed 
 	end
 	if(btn(0)) then
-  tx=max(tx-tinc, -tmax)
+		tx=max(tx-tinc, -tmax)
 		txpos=false
 		txneg=true
- else
-  if(btn(1)) then
-   tx=min(tx+tinc, tmax)
-		txpos=true
-		txneg=false
-  else
+	else
+		if(btn(1)) then
+			tx=min(tx+tinc, tmax)
+			txpos=true
+			txneg=false
+		else
 			txpos=false
 			txneg=false
-   if(tx<0) then
-    tx=min(tx+tdec, 0)
-   else
-    tx=max(tx-tdec, 0)
-   end
-  end
- end
+			if(tx<0) then
+				tx=min(tx+tdec, 0)
+			else
+				tx=max(tx-tdec, 0)
+			end
+		end
+	end
 	if(btn(2)) then
-  ty=max(ty-tinc, -tmax)
+		ty=max(ty-tinc, -tmax)
 		typos=false
 		tyneg=true
- else
-  if(btn(3)) then
-   ty=min(ty+tinc, tmax)
+	else
+		if(btn(3)) then
+			ty=min(ty+tinc, tmax)
 			typos=true
 			tyneg=false
-  else
-		typos=false
-		tyneg=false
-   if(ty<0) then
-    ty=min(ty+tdec,0)
-   else
-    ty=max(ty-tdec,0)
-   end
-  end
- end
+		else
+			typos=false
+			tyneg=false
+			if(ty<0) then
+				ty=min(ty+tdec,0)
+			else
+				ty=max(ty-tdec,0)
+			end
+		end
+	end
 
- -- set thruster flags
- states.play.txneg = txneg
- states.play.txpos = txpos
- states.play.tyneg = tyneg
- states.play.typos = typos
- -- apply acceleration
- vx+=tx
- vy+=ty
- -- abs limits
- vx=clamp(vx,-maxv,maxv)
- vy=clamp(vy,-maxv,maxv)
- -- drag
- vx-=vx/12
- vy-=vy/12
- -- null out residuals
- if (abs(vx) < 0.005) then
-  vx = 0
- end
- if (abs(vy) < 0.005) then
-  vy = 0
- end
- -- update position
- x+=vx
- y+=vy
- if(x<=0 or x>=120)then vx=0 tx=0 end
- if(y<=0 or y>=120)then vy=0 ty=0 end
- x=clamp(x,0,120)
- y=clamp(y,0,120)
+	-- set thruster flags
+	states.play.txneg = txneg
+	states.play.txpos = txpos
+	states.play.tyneg = tyneg
+	states.play.typos = typos
+	-- apply acceleration
+	vx+=tx
+	vy+=ty
+	-- abs limits
+	vx=clamp(vx,-maxv,maxv)
+	vy=clamp(vy,-maxv,maxv)
+	-- drag
+	vx-=vx/12
+	vy-=vy/12
+	-- null out residuals
+	if (abs(vx) < 0.005) then
+		vx = 0
+	end
+	if (abs(vy) < 0.005) then
+		vy = 0
+	end
+	-- update position
+	x+=vx
+	y+=vy
+	if(x<=0 or x>=120)then vx=0 tx=0 end
+	if(y<=0 or y>=120)then vy=0 ty=0 end
+	x=clamp(x,0,120)
+	y=clamp(y,0,120)
 
- -- spawn rocks
+	-- spawn rocks
 	objtimer+=1
 
- local laserx=64+sin((objtimer%100)/100)*20
+	local laserx=64+sin((objtimer%100)/100)*20
 	local lasery=8+cos((objtimer%100)/100)*5
- if(objtimer % 20 == 0)then
-  newobj={}
-  newobj.x=laserx
-  newobj.y=lasery
-  newobj.vx=rnd(1.2)-1
-  newobj.vy=rnd(1.66)+0.33
-  newobj.c=rnd(6)
-  add(states.play.objects,newobj)
-  make_explosion(newobj,newobj.vx,newobj.vy)
- end
+	if(objtimer % 20 == 0)then
+		newobj={}
+		newobj.x=laserx
+		newobj.y=lasery
+		newobj.vx=rnd(1.2)-1
+		newobj.vy=rnd(1.66)+0.33
+		newobj.c=rnd(6)
+		add(states.play.objects,newobj)
+		make_explosion(newobj,newobj.vx,newobj.vy)
+	end
 
 -- laser burn trace
- if(objtimer % 2 == 0)then
+	if(objtimer % 2 == 0)then
 		add(states.play.particles,{x=laserx,y=lasery,xv=0,yv=0,ttl=10})
- end
- -- move objects
+	end
+	-- move objects
 	for item in all(states.play.objects) do
 		item.x += item.vx
 		item.y += item.vy
-  if(item.y>128)then
+		if(item.y>128)then
 			del(states.play.objects,item)
-  end
- end
+		end
+	end
 
- -- object release
- if(not states.play.grabbed and states.play.object)then
-  states.play.object.x=states.play.x
-  states.play.object.y=states.play.y-10
-  states.play.object.vx=states.play.vx
-  states.play.object.vy=states.play.vy-0.5
+	-- object release
+	if(not states.play.grabbed and states.play.object)then
+		states.play.object.x=states.play.x
+		states.play.object.y=states.play.y-10
+		states.play.object.vx=states.play.vx
+		states.play.object.vy=states.play.vy-0.5
 		states.play.object=nil
- end
+	end
 
- -- collision detection
+	-- collision detection
 	for item in all(states.play.objects) do
-  -- is it within the grab area
-  -- the grab area is 8 pixels above the drone +- 4
-  local x = states.play.x
+	-- is it within the grab area
+	-- the grab area is 8 pixels above the drone +- 4
+	local x = states.play.x
 	local y = states.play.y
 	if(states.play.object==nil)then
 		 if(states.play.grabbed==true and item.x > x-6 and item.x < x+6 and item.y > y-12 and item.y < y-8)then
 				states.play.object=item
 			end
 		end
-	-- crashes
+		-- crashes
 		if(item!=states.play.object)then
 		 if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
 				states.play.health-=25
@@ -295,13 +295,13 @@ function states.play:update()
 		end
 	end
 
- states.play.tx = tx
- states.play.ty = ty
- states.play.vx = vx
- states.play.vy = vy
- states.play.x = x
- states.play.y = y
- states.play.grabbed = grabbed
+	states.play.tx = tx
+	states.play.ty = ty
+	states.play.vx = vx
+	states.play.vy = vy
+	states.play.x = x
+	states.play.y = y
+	states.play.grabbed = grabbed
 
 	for p in all(states.play.particles) do
 		p.x += p.xv
