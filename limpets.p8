@@ -170,11 +170,13 @@ function states.play:update()
 		grabbed = not grabbed 
 	end
 	if(btn(0)) then
+		self:consume_fuel()
 		tx=max(tx-tinc, -tmax)
 		txpos=false
 		txneg=true
 	else
 		if(btn(1)) then
+			self:consume_fuel()
 			tx=min(tx+tinc, tmax)
 			txpos=true
 			txneg=false
@@ -189,11 +191,13 @@ function states.play:update()
 		end
 	end
 	if(btn(2)) then
+		self:consume_fuel()
 		ty=max(ty-tinc, -tmax)
 		typos=false
 		tyneg=true
 	else
 		if(btn(3)) then
+			self:consume_fuel()
 			ty=min(ty+tinc, tmax)
 			typos=true
 			tyneg=false
@@ -325,6 +329,10 @@ function states.play:make_explosion(point,xv,yv)
 	for i=1,8 do
 		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20})
 	end
+end
+
+function states.play:consume_fuel()
+	self.health-=0.33
 end
 
 function update_state()
