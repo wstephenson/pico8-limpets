@@ -98,10 +98,12 @@ function states.play:draw()
 
 	-- mining laser
 	local lcolor = 2
+	local lorigx = 40
+	local lorigy = 115
 	if(flr(objtimer)%2==0)then
 		lcolor = 14
 	end
-	line(40,116,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
+	line(lorigx,lorigy,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
 
 	-- drone
 	spr(1, self.x-8, self.y)
