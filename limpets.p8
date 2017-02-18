@@ -33,6 +33,8 @@ function states.play:init()
 	self.shldr=64
 	self.laserx=0
 	self.lasery=0
+	self.laserson=7
+	self.lasersoff=8
 	self.x=72
 	self.y=108
 	self.vx=0
@@ -106,13 +108,23 @@ function states.play:draw()
 	circ(self.shldx, self.shldy, self.shldr, shield_color)
 
 	-- mining laser
-	local lcolor = 2
 	local lorigx = 40
 	local lorigy = 115
-	if(flr(objtimer)%2==0)then
-		lcolor = 14
+
+	if(self:laser_on()) then
+		local lcolor = 2
+		if(flr(objtimer)%2==0)then
+			lcolor = 14
+		end
+		line(lorigx,lorigy,self.laserx,self.lasery,lcolor)
 	end
-	line(lorigx,lorigy,self.laserx,self.lasery,lcolor)
+
+	-- laser indicator
+	if (self.laser>0)then
+		line(lorigx,126,lorigx,117+(self.laser/(self.laserson*30))*10,12)
+	else
+		line(lorigx,126,lorigx,117-(self.laser/(self.lasersoff*30))*10,2)
+	end
 
 	-- drone
 	spr(1, self.x-8, self.y)
@@ -183,7 +195,7 @@ function states.play:draw()
 		print("vy:"..self.vy, 45, 100, 7)
 		print("tx:"..self.tx, 0, 107, 7)
 		print("ty:"..self.ty, 45, 107, 7)
-		print("h:"..self.health, 0, 114, 7)
+		print("l:"..self.laser, 0, 114, 7)
 	else
 		print("s:"..self.score, 80, 120, 10)
 	end
@@ -293,22 +305,27 @@ function states.play:update()
 	self.laserx=64+sin((objtimer%100)/100)*20
 	self.lasery=8+cos((objtimer%100)/100)*5
 
-	-- spawn rocks
-	if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-		local newobj={}
-		newobj.x=self.laserx
-		newobj.y=self.lasery
-		newobj.vx=rnd(1)-0.5
-		newobj.vy=rnd(1)+0.2
-		newobj.c=rnd(6)
-		add(self.objects,newobj)
-		add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
-		self:make_explosion(newobj,newobj.vx,newobj.vy)
-	end
+	-- update laser state
+	self.laser = objtimer % ((self.laserson+self.lasersoff)*30) - self.lasersoff*30
 
-	-- laser burn trace
-	if(objtimer % 2 == 0)then
-		add(self.particles,{x=self.laserx,y=self.lasery,xv=0,yv=0,ttl=10})
+	-- spawn rocks
+	if(self:laser_on())then
+		if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
+			local newobj={}
+			newobj.x=self.laserx
+			newobj.y=self.lasery
+			newobj.vx=rnd(1)-0.5
+			newobj.vy=rnd(1)+0.2
+			newobj.c=rnd(6)
+			add(self.objects,newobj)
+			add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
+			self:make_explosion(newobj,newobj.vx,newobj.vy)
+		end
+
+		-- laser burn trace
+		if(objtimer % 2 == 0)then
+			add(self.particles,{x=self.laserx,y=self.lasery,xv=0,yv=0,ttl=10})
+		end
 	end
 
 	-- move objects
@@ -411,6 +428,10 @@ end
 
 function states.play:in_scoop()
 	return (self.x>60 and self.x<68 and self.y>114 and self.y<122)
+end
+
+function states.play:laser_on()
+	return self.laser > 0
 end
 
 function update_state()
