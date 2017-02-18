@@ -268,9 +268,9 @@ function states.play:update()
  -- object release
  if(not states.play.grabbed and states.play.object)then
   states.play.object.x=states.play.x
-  states.play.object.y=states.play.y-8
+  states.play.object.y=states.play.y-10
   states.play.object.vx=states.play.vx
-  states.play.object.vy=states.play.vy
+  states.play.object.vy=states.play.vy-0.5
 		states.play.object=nil
  end
 
@@ -279,13 +279,21 @@ function states.play:update()
   -- is it within the grab area
   -- the grab area is 8 pixels above the drone +- 4
   local x = states.play.x
-  local y = states.play.y
-  if(states.play.object==nil)then
+	local y = states.play.y
+	if(states.play.object==nil)then
 		 if(states.play.grabbed==true and item.x > x-6 and item.x < x+6 and item.y > y-12 and item.y < y-8)then
 				states.play.object=item
 			end
 		end
- end
+	-- crashes
+		if(item!=states.play.object)then
+		 if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
+				states.play.health-=25
+				make_explosion(item,item.vx,item.vy)
+				del(states.play.objects,item)
+			end
+		end
+	end
 
  states.play.tx = tx
  states.play.ty = ty
