@@ -147,11 +147,12 @@ function states.play:draw()
 	rect(126,126,127,127-states.play.health/100*127,8)
 
  -- debug
-	if(false) then
+	if(true) then
 		print("vx:"..states.play.vx, 0, 100, 7)
 		print("vy:"..states.play.vy, 45, 100, 7)
 		print("tx:"..states.play.tx, 0, 107, 7)
 		print("ty:"..states.play.ty, 45, 107, 7)
+		print("h:"..states.play.health, 0, 114, 7)
 	end
 end
 
@@ -276,19 +277,22 @@ function states.play:update()
 
 	-- collision detection
 	for item in all(states.play.objects) do
-	-- is it within the grab area
-	-- the grab area is 8 pixels above the drone +- 4
-	local x = states.play.x
-	local y = states.play.y
-	if(states.play.object==nil)then
-		 if(states.play.grabbed==true and item.x > x-6 and item.x < x+6 and item.y > y-12 and item.y < y-8)then
+		-- is it within the grab area
+		-- the grab area is 8 pixels above the drone +- 4
+		local x = states.play.x
+		local y = states.play.y
+		if(states.play.object==nil)then
+			if(states.play.grabbed==true and item.x > x-6 and item.x < x+6 and item.y > y-12 and item.y < y-8)then
 				states.play.object=item
 			end
 		end
 		-- crashes
 		if(item!=states.play.object)then
-		 if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
-				states.play.health-=25
+			if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
+				do_damage(item)
+				-- if(states.play.health<0)then
+				-- 	do_death()
+				-- end
 				make_explosion(item,item.vx,item.vy)
 				del(states.play.objects,item)
 			end
@@ -320,6 +324,13 @@ function update_state()
 	if(next_state)then
 		state=next_state
 	end
+end
+
+function do_damage(object)
+	local dx=object.vx-states.play.vx
+	local dy=object.vy-states.play.vy
+	local vsquared=(dx*dx+dy*dy)
+	states.play.health-=vsquared*5
 end
 
 function make_explosion(point,xv,yv)
