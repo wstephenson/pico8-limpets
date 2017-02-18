@@ -167,7 +167,8 @@ function states.play:draw()
 	end
 
  -- health
-	rect(126,126,127,127-self.health/100*127,8)
+	local hpercent=self.health/100
+	rect(126,126,127,127-hpercent*127,hpercent > 0.8 and 3 or (hpercent>0.5 and 11 or (hpercent>0.2 and 9 or 8)))
 
  -- debug
 	if(false) then
