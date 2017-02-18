@@ -31,6 +31,8 @@ function states.play:init()
 	self.shldx=64
 	self.shldy=160
 	self.shldr=64
+	self.laserx=0
+	self.lasery=0
 	self.x=72
 	self.y=108
 	self.vx=0
@@ -110,7 +112,7 @@ function states.play:draw()
 	if(flr(objtimer)%2==0)then
 		lcolor = 14
 	end
-	line(lorigx,lorigy,64+sin((objtimer%100)/100)*20,8+cos((objtimer%100)/100)*5,lcolor)
+	line(lorigx,lorigy,self.laserx,self.lasery,lcolor)
 
 	-- drone
 	spr(1, self.x-8, self.y)
@@ -284,25 +286,29 @@ function states.play:update()
 	x=clamp(x,0,120)
 	y=clamp(y,0,120)
 
-	-- spawn rocks
+	-- update event timer
 	objtimer+=1
-	local laserx=64+sin((objtimer%100)/100)*20
-	local lasery=8+cos((objtimer%100)/100)*5
+
+	-- move mining laser aim
+	self.laserx=64+sin((objtimer%100)/100)*20
+	self.lasery=8+cos((objtimer%100)/100)*5
+
+	-- spawn rocks
 	if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
 		local newobj={}
-		newobj.x=laserx
-		newobj.y=lasery
+		newobj.x=self.laserx
+		newobj.y=self.lasery
 		newobj.vx=rnd(1)-0.5
 		newobj.vy=rnd(1)+0.2
 		newobj.c=rnd(6)
 		add(self.objects,newobj)
-		add(self.burn_decals,{x=laserx-4,y=lasery-4,ttl=15})
+		add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
 		self:make_explosion(newobj,newobj.vx,newobj.vy)
 	end
 
 	-- laser burn trace
 	if(objtimer % 2 == 0)then
-		add(self.particles,{x=laserx,y=lasery,xv=0,yv=0,ttl=10})
+		add(self.particles,{x=self.laserx,y=self.lasery,xv=0,yv=0,ttl=10})
 	end
 
 	-- move objects
