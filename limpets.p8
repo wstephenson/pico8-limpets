@@ -628,7 +628,6 @@ end
 
 function draw_mission_status(yorig)
 	yorig=yorig or 0
-	printh(yorig)
 	print("your mission is to "..mission.verb,0,yorig,7)
 	yorig+=6
 	for j=1,#mission.required do
