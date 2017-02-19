@@ -18,13 +18,15 @@ objtimer=0
 limpets={}
 --mission status
 mission={}
-mission.complete=true
+mission.count=0
+mission.complete=false
 
 function states.splash:init()
 	self.next_state="menu"
 	-- OOP!
 	states.menu.next_limpet=1
 	states.menu:populate_limpets()
+	states.menu:init_mission()
 end
 
 function states.splash:draw()
@@ -40,9 +42,6 @@ function states.menu:init()
 	if(next_live_limpet_index()==0)then
 		self.next_state="gameover"
 	else
-		if(mission.complete)then
-			self:init_mission()
-		end
 		self.next_state="play"
 		self:populate_limpets()
 	end
@@ -55,7 +54,13 @@ function states.menu:draw()
 end
 
 function states.menu:update()
-	if(btnp(4) or btnp(5)) then update_state() end
+	if(btnp(4) or btnp(5))then
+		if(mission.complete)then
+			self:init_mission()
+		else
+			update_state()
+		end
+	end
 end
 
 function states.menu:populate_limpets()
@@ -636,7 +641,7 @@ function draw_mission_status(yorig)
 	end
 	if(mission.complete)then
 		yorig+=6
-		print("well done!!!",10,4,yorig)
+		print("well done!!!",0,yorig,10)
 		yorig+=6
 	end
 	return yorig
