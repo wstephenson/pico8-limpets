@@ -32,6 +32,11 @@ end
 function states.splash:draw()
 	cls()
 	print("limpet control",0,0,7)
+	print("retrieve space junk",4,12,7)
+	print("avoid the laser",4,18,7)
+
+	print("‹‘”ƒ to control thrust",4,30,7)
+	print("hold — to grab",4,36,7)
 end
 
 function states.splash:update()
