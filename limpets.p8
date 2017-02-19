@@ -7,13 +7,29 @@ state=nil
 --table of all game states
 states={}
 --default states
+states.splash={}
 states.menu={}
-states.menu.next_limpet=1
 states.play={}
+states.gameover={}
+--hack
+states.menu.next_limpet=1
 --global event timer
 objtimer=0
 --limpet list
 limpets={}
+
+function states.splash:init()
+	self.next_state="menu"
+end
+
+function states.splash:draw()
+	cls()
+	print("limpet control",0,0,7)
+end
+
+function states.splash:update()
+	if(btnp(4) or btnp(5)) then update_state() end
+end
 
 function states.menu:init()
 	self.next_state="play"
@@ -22,7 +38,7 @@ end
 
 function states.menu:draw()
 	cls()
-	print("limpet control",0,0,7)
+	print("your limpets",0,0,7)
 	for i=1,#limpets do
 		local limpet = limpets[i]
 		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,6*i,limpet.health>0 and 12 or 8)
@@ -527,6 +543,19 @@ function states.play:next_live_limpet_index()
 	return 0
 end
 
+function states.gameover:init()
+	self.next_state="splash"
+end
+
+function states.gameover:draw()
+	cls()
+	print("game over :(",0,0,7)
+end
+
+function states.gameover:update()
+	if(btnp(4) or btnp(5)) then update_state() end
+end
+
 function update_state()
 	local next_state=states[state].next_state
 	if(next_state)then
@@ -595,7 +624,7 @@ function line_intersects_line(x0,y0,x1,y1,x2,y2,x3,y3)
 end
 
 function _init()
-	state="menu"
+	state="splash"
 	states[state]:init()
 end
 
