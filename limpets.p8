@@ -598,7 +598,7 @@ end
 
 function states.summary:draw()
 	cls()
-	local h=draw_limpets_status()
+	local h=draw_limpets_status(0,true)
 	h=draw_mission_status(h+6)
 	--printh(#states.play.dead_this_mission)
 	draw_rip_status(h,states.play.dead_this_mission)
@@ -672,14 +672,23 @@ function clamp(val,minv,maxv)
 	return max(minv,min(val,maxv))
 end
 
-function draw_limpets_status(yorig)
+function draw_limpets_status(yorig,score)
 	yorig=yorig or 0
+	score=score or false
 	print("your limpets",0,yorig,7)
 	yorig+=6
 	for i=1,#limpets do
 		local limpet = limpets[i]
 		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,yorig,limpet.health>0 and 12 or 8)
 		yorig+=6
+		if(score and #limpet.score>0)then
+			for i=1,#limpet.score do
+				local score_item=limpet.score[i]
+				print(score_item.count,8+11*i,yorig,(score_item.count>2 and (score_item.count>4 and 10 or 6) or 9))
+				spr(score_item.obj, 12+11*i-1,yorig-1)
+			end
+			yorig+=6
+		end
 	end
 	return yorig
 end
