@@ -570,7 +570,7 @@ function states.play:laser_damage()
 end
 
 function states.play:laser_on()
-	return self.laser > 0
+	return self.laser > 0 and self.limpet.health > 0
 end
 
 function states.gameover:init()
