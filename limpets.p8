@@ -521,6 +521,9 @@ end
 
 function states.play:consume_fuel()
 	self.limpet.health-=0.33
+	if(self.limpet.health<0)then
+		self:do_death()
+	end
 end
 
 function states.play:do_death()
