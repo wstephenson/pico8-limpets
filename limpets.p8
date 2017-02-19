@@ -12,7 +12,6 @@ states.menu={}
 states.play={}
 states.gameover={}
 --hack
-states.menu.next_limpet=1
 --global event timer
 objtimer=0
 --limpet list
@@ -20,6 +19,9 @@ limpets={}
 
 function states.splash:init()
 	self.next_state="menu"
+	-- OOP!
+	states.menu.next_limpet=1
+	states.menu:populate_limpets()
 end
 
 function states.splash:draw()
@@ -32,8 +34,12 @@ function states.splash:update()
 end
 
 function states.menu:init()
-	self.next_state="play"
-	self:populate_limpets()
+	if(next_live_limpet_index()==0)then
+		self.next_state="gameover"
+	else
+		self.next_state="play"
+		self:populate_limpets()
+	end
 end
 
 function states.menu:draw()
@@ -65,7 +71,7 @@ function states.play:init()
 	tdec=tinc*2
 	tmax=1
 	maxv=3
-	self.lindex=self:next_live_limpet_index()
+	self.lindex=next_live_limpet_index()
 	self.limpet=limpets[self.lindex]
 	self.next_state="menu"
 	self.shldx=64
@@ -534,15 +540,6 @@ function states.play:laser_on()
 	return self.laser > 0
 end
 
-function states.play:next_live_limpet_index()
-	for i=1,#limpets do
-		if(limpets[i].health>0)then
-			return i
-		end
-	end
-	return 0
-end
-
 function states.gameover:init()
 	self.next_state="splash"
 end
@@ -621,6 +618,15 @@ function line_intersects_line(x0,y0,x1,y1,x2,y2,x3,y3)
 	else
 		return false,0,0
 	end
+end
+
+function next_live_limpet_index()
+	for i=1,#limpets do
+		if(limpets[i].health>0)then
+			return i
+		end
+	end
+	return 0
 end
 
 function _init()
