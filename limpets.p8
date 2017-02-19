@@ -104,7 +104,6 @@ function states.play:init()
 	self.stars={}
 	self.particles={}
 	self.burn_decals={}
-	self.score=0
 	self.deathtimer=0
 
 	self.objects={}
@@ -255,7 +254,6 @@ function states.play:draw()
 		print("i:"..(self.object and self.object.c or '%'), 0, 114, 7)
 	else
 		print(self.limpet.name, 45, 120, 14)
-		print("s:"..self.score, 80, 120, 10)
 	end
 end
 
@@ -525,8 +523,25 @@ function states.play:do_score(item)
 		if(i.obj==item.c)then
 			self.limpet.health=min(self.limpet.health+20,100)
 			i.got+=1
+			self:do_drone_score(item)
 			break
 		end
+	end
+end
+
+function states.play:do_drone_score(item)
+	local found=false
+	for i in all(self.limpet.score) do
+		if(i.obj==item.c)then
+			i.count+=1
+			found=true
+			printh("located entry for: "..item.c.." now: "..i.count)
+			break;
+		end
+	end
+	if(not found) then
+		printh("added entry for: "..item.c)
+		add(self.limpet.score,{obj=item.c,count=1})
 	end
 end
 
@@ -754,7 +769,7 @@ function populate_limpets()
 	-- renew the gang
 	assert(#names>0)
 	while(#limpets<3)do
-		add(limpets,{name=names[1],health=100})
+		add(limpets,{name=names[1],health=100,score={}})
 		del(names,names[1])
 	end
 end
