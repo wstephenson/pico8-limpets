@@ -454,7 +454,7 @@ function states.play:update()
 		-- in scoop?
 		if (self:in_scoop())then
 			self:do_score(self.object)
-			self:is_mission_complete()
+			if(self:is_mission_complete())then update_state() end
 			del(self.objects,self.object)
 			self.object=nil
 		else
@@ -555,6 +555,12 @@ function states.menu:init_mission()
 end
 
 function states.play:is_mission_complete(dropped_object)
+	local complete = true
+	for i in all(mission.required) do
+		complete = complete and (i.count<=i.got)
+	end
+	mission.complete=complete
+	return complete
 end
 
 function states.play:laser_hit()
