@@ -39,6 +39,7 @@ function states.menu:init()
 	else
 		self.next_state="play"
 		self:populate_limpets()
+		self:init_mission()
 	end
 end
 
@@ -521,6 +522,17 @@ end
 
 function states.play:in_scoop()
 	return (self.x>60 and self.x<68 and self.y>114 and self.y<122)
+end
+
+function states.menu:init_mission()
+	mission={}
+	mission.required={}
+	mission.obtained={}
+	mission.verb="obtain"
+	add(mission.required,{obj=16,count=1,got=0})
+end
+
+function states.play:is_mission_complete(dropped_object)
 end
 
 function states.play:laser_hit()
