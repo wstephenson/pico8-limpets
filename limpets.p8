@@ -17,6 +17,8 @@ function states.menu:init()
 end
 
 function states.menu:draw()
+	cls()
+	print "limpet control"
 end
 
 function states.menu:update()
@@ -36,7 +38,7 @@ function states.play:init()
 	self.laserx=0
 	self.lasery=0
 	self.laserson=7
-	self.lasersoff=8
+	self.lasersoff=2 -- FIXME 8
 	self.x=72
 	self.y=108
 	self.vx=0
@@ -55,6 +57,7 @@ function states.play:init()
 	self.burn_decals={}
 	self.health=100
 	self.score=0
+	self.deathtimer=0
 
 	self.objects={}
 	self.stars={}
@@ -212,59 +215,69 @@ function states.play:update()
 	age_transients(self.burn_decals)
 
 	-- controls
-	if(btn(4)) then
-		if(not grabbed and self.grabber_cooldown==0) then
-			grabbed = true
-			self.grabber_cooldown=30
-		end
-	else
-		grabbed = false
-	end
-
-	if(self.grabber_cooldown>0) then
-		self.grabber_cooldown-=1
-	end
-
-	if(btn(0)) then
-		self:consume_fuel()
-		tx=max(tx-tinc, -tmax)
-		txpos=false
-		txneg=true
-	else
-		if(btn(1)) then
-			self:consume_fuel()
-			tx=min(tx+tinc, tmax)
-			txpos=true
-			txneg=false
+	if(self.health>0)then
+		if(btn(4)) then
+			if(not grabbed and self.grabber_cooldown==0) then
+				grabbed = true
+				self.grabber_cooldown=30
+			end
 		else
+			grabbed = false
+		end
+
+		if(self.grabber_cooldown>0) then
+			self.grabber_cooldown-=1
+		end
+
+		if(btn(0)) then
+			self:consume_fuel()
+			tx=max(tx-tinc, -tmax)
 			txpos=false
-			txneg=false
-			if(tx<0) then
-				tx=min(tx+tdec, 0)
+			txneg=true
+		else
+			if(btn(1)) then
+				self:consume_fuel()
+				tx=min(tx+tinc, tmax)
+				txpos=true
+				txneg=false
 			else
-				tx=max(tx-tdec, 0)
+				txpos=false
+				txneg=false
+				if(tx<0) then
+					tx=min(tx+tdec, 0)
+				else
+					tx=max(tx-tdec, 0)
+				end
 			end
 		end
-	end
-	if(btn(2)) then
-		self:consume_fuel()
-		ty=max(ty-tinc, -tmax)
-		typos=false
-		tyneg=true
-	else
-		if(btn(3)) then
+		if(btn(2)) then
 			self:consume_fuel()
-			ty=min(ty+tinc, tmax)
-			typos=true
-			tyneg=false
-		else
+			ty=max(ty-tinc, -tmax)
 			typos=false
-			tyneg=false
-			if(ty<0) then
-				ty=min(ty+tdec,0)
+			tyneg=true
+		else
+			if(btn(3)) then
+				self:consume_fuel()
+				ty=min(ty+tinc, tmax)
+				typos=true
+				tyneg=false
 			else
-				ty=max(ty-tdec,0)
+				typos=false
+				tyneg=false
+				if(ty<0) then
+					ty=min(ty+tdec,0)
+				else
+					ty=max(ty-tdec,0)
+				end
 			end
+		end
+	else -- dead
+		self.deathtimer-=1
+		if(self.deathtimer==2*30 or self.deathtimer==30)then
+			self:make_explosion(self,0,0)
+		end
+		if(self.deathtimer==0)then
+			update_state()
 		end
 	end
 
@@ -296,6 +309,14 @@ function states.play:update()
 	if(y<=0 or y>=120)then vy=0 ty=0 end
 	x=clamp(x,0,120)
 	y=clamp(y,0,120)
+
+	self.tx = tx
+	self.ty = ty
+	self.vx = vx
+	self.vy = vy
+	self.x = x
+	self.y = y
+	self.grabbed = grabbed
 
 	-- update event timer
 	objtimer+=1
@@ -332,9 +353,13 @@ function states.play:update()
 		local hy
 		hit,hx,hy=self:laser_hit()
 		if(hit)then
+			-- only do laser damage on every 3rd update
 			if(objtimer % 3 == 0)then
 				self:make_explosion({x=hx,y=hy},0,0)
-				self:laser_damage()
+				self.health-=self:laser_damage()
+				if(self.health<0)then
+					self:do_death()
+				end
 			end
 		end
 	end
@@ -387,23 +412,15 @@ function states.play:update()
 		-- crashes
 		if(item!=self.object)then
 			if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
-				self.health-=do_damage(item,self)
-				-- if(self.health<0)then
-				-- 	do_death()
-				-- end
+				self.health-=collision_damage(item,self)
+				if(self.health<0)then
+					self:do_death()
+				end
 				self:make_explosion(item,item.vx,item.vy)
 				del(self.objects,item)
 			end
 		end
 	end
-
-	self.tx = tx
-	self.ty = ty
-	self.vx = vx
-	self.vy = vy
-	self.x = x
-	self.y = y
-	self.grabbed = grabbed
 
 	for p in all(self.particles) do
 		p.x += p.xv
@@ -424,6 +441,18 @@ end
 
 function states.play:consume_fuel()
 	self.health-=0.33
+end
+
+function states.play:do_death()
+	self.deathtimer=3*30
+	self:make_explosion(self,0,0)
+	self.txneg=false
+	self.txpos=false
+	self.tyneg=false
+	self.typos=false
+	self.grabbed=false
+	self.tx=0
+	self.ty=0
 end
 
 function states.play:do_score(item)
@@ -451,7 +480,7 @@ function states.play:laser_hit()
 end
 
 function states.play:laser_damage()
-	self.health-=2
+	return 2
 end
 
 function states.play:laser_on()
@@ -465,7 +494,7 @@ function update_state()
 	end
 end
 
-function do_damage(o1,o2)
+function collision_damage(o1,o2)
 	local dx=o1.vx-o2.vx
 	local dy=o1.vy-o2.vy
 	local vsquared=(dx*dx+dy*dy)
