@@ -392,6 +392,7 @@ function states.play:update()
 			newobj.vx=rnd(1)-0.5
 			newobj.vy=rnd(1)+0.2
 			newobj.c=16+flr(rnd(6))
+			newobj.ttl=30*8
 			add(self.objects,newobj)
 			add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
 			self:make_explosion(newobj,newobj.vx,newobj.vy)
@@ -423,12 +424,15 @@ function states.play:update()
 	for item in all(self.objects) do
 		item.x += item.vx
 		item.y += item.vy
+		item.vx-=item.vx/75
+		item.vy-=item.vy/75
+		item.ttl-=1
 		local dead=false
 		if(self:hit_shield(item) and item!=self.object) then
 			self.shldf=true
 			dead=true
 		end
-		if(item.y>128)then
+		if(item.y>128 or item.ttl<1)then
 			dead=true
 		end
 		if(dead)then
