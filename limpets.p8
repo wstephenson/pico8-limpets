@@ -8,14 +8,16 @@ state=nil
 states={}
 --default states
 states.splash={}
-states.menu={}
+states.briefing={}
 states.play={}
+states.summary={}
 states.gameover={}
 --hack
 --global event timer
 objtimer=0
 --limpet list
 limpets={}
+names={"huey","dewey","louie","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
 --mission status
 mission={}
 mission_count=0
@@ -23,11 +25,7 @@ mission.complete=false
 
 function states.splash:init()
 	dead_this_game={}
-	self.next_state="menu"
-	-- oop!
-	states.menu.next_limpet=1
-	states.menu:populate_limpets()
-	states.menu:init_mission()
+	self.next_state="briefing"
 end
 
 function states.splash:draw()
@@ -44,58 +42,32 @@ function states.splash:update()
 	if(btnp(4) or btnp(5)) then update_state() end
 end
 
-function states.menu:init()
-	for i in all(dead_this_mission) do
-		add(dead_this_game,i)
-	end
-	dead_this_mission={}
-	if(mission.complete)then
-		self:reap_dead_limpets()
-	end
-	if(next_live_limpet_index()==0)then
-		self:reap_dead_limpets()
-		self.next_state="gameover"
-	else
-		self.next_state="play"
-	end
+function states.briefing:init()
+	self.next_state="play"
+	self.next_limpet=1
+	populate_limpets()
+	self:init_mission()
 end
 
-function states.menu:draw()
+function states.briefing:draw()
 	cls()
 	local h=draw_limpets_status()
 	draw_mission_status(h+6)
 end
 
-function states.menu:update()
+function states.briefing:update()
 	if(btnp(4) or btnp(5))then
-		if(mission.complete)then
-			self:init_mission()
-			self:populate_limpets()
-		else
-			update_state()
-		end
+		update_state()
 	end
 end
 
-function states.menu:reap_dead_limpets()
-	for limpet in all(limpets)do
-		if(limpet.health<=0)then
-			add(dead_this_mission,limpet.name)
-			del(limpets,limpet)
-		end
-	end
-end
-
-function states.menu:populate_limpets()
-	-- renew the gang
-	local names={"huey","dewey","louie","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
-	while(#limpets<3)do
-		add(limpets,{name=names[self.next_limpet],health=100})
-		self.next_limpet+=1
-		if self.next_limpet>#names then
-			self.next_limpet=1
-		end
-	end
+function states.briefing:init_mission()
+	mission={}
+	mission.required={}
+	mission.obtained={}
+	mission.verb="obtain"
+	mission.complete=false
+	add(mission.required,{obj=16,count=1,got=0})
 end
 
 function states.play:init()
@@ -105,7 +77,7 @@ function states.play:init()
 	maxv=3
 	self.lindex=next_live_limpet_index()
 	self.limpet=limpets[self.lindex]
-	self.next_state="menu"
+	self.next_state="briefing"
 	self.shldx=64
 	self.shldy=160
 	self.shldr=64
@@ -137,7 +109,7 @@ function states.play:init()
 
 	self.objects={}
 	self.stars={}
-
+	self.dead_this_mission={}
 	--local testrock={}
 	--testrock.x = 64
 	--testrock.y = 32
@@ -361,6 +333,7 @@ function states.play:update()
 			self:make_explosion(self,0,0)
 		end
 		if(self.deathtimer==0)then
+			self.next_state="summary"
 			update_state()
 		end
 	end
@@ -471,7 +444,10 @@ function states.play:update()
 		-- in scoop?
 		if (self:in_scoop())then
 			self:do_score(self.object)
-			if(self:is_mission_complete())then update_state() end
+			if(self:is_mission_complete())then
+				self.next_state="summary"
+				update_state()
+			end
 			del(self.objects,self.object)
 			self.object=nil
 		else
@@ -545,10 +521,9 @@ function states.play:do_death()
 end
 
 function states.play:do_score(item)
-	self.score+=1
-	self.limpet.health=min(self.limpet.health+5,100)
 	for i in all(mission.required) do
 		if(i.obj==item.c)then
+			self.limpet.health=min(self.limpet.health+20,100)
 			i.got+=1
 			break
 		end
@@ -563,15 +538,6 @@ end
 
 function states.play:in_scoop()
 	return (self.x>60 and self.x<68 and self.y>114 and self.y<122)
-end
-
-function states.menu:init_mission()
-	mission={}
-	mission.required={}
-	mission.obtained={}
-	mission.verb="obtain"
-	mission.complete=false
-	add(mission.required,{obj=16,count=1,got=0})
 end
 
 function states.play:is_mission_complete(dropped_object)
@@ -600,6 +566,52 @@ function states.play:laser_on()
 	return self.laser > 0 and self.limpet.health > 0
 end
 
+-- 3 way switch: play(next life), briefing(new mission), gameover
+function states.summary:init()
+	if(mission.complete)then
+		self:reap_dead_limpets()
+		self.next_state="briefing"
+	else
+		if(self:they_are_all_dead())then
+			self:reap_dead_limpets()
+			self.next_state="gameover"
+		else
+			self.next_state="play"
+		end
+	end
+end
+
+function states.summary:draw()
+	cls()
+	local h=draw_limpets_status()
+	h=draw_mission_status(h+6)
+	--printh(#states.play.dead_this_mission)
+	draw_rip_status(h,states.play.dead_this_mission)
+end
+
+function states.summary:update()
+	if(btnp(4) or btnp(5)) then
+		for i in all(states.play.dead_this_mission) do
+			add(dead_this_game,i)
+		end
+		self.dead_this_mission={}
+		update_state()
+	end
+end
+
+function states.summary:reap_dead_limpets()
+	for limpet in all(limpets)do
+		if(limpet.health<=0)then
+			add(states.play.dead_this_mission,limpet.name)
+			del(limpets,limpet)
+		end
+	end
+end
+
+function states.summary:they_are_all_dead()
+	return next_live_limpet_index()==0
+end
+
 function states.gameover:init()
 	self.next_state="splash"
 end
@@ -607,7 +619,7 @@ end
 function states.gameover:draw()
 	cls()
 	print("game over :(",0,0,7)
-	draw_rip_status(12,true)
+	draw_rip_status(12,dead_this_game)
 end
 
 function states.gameover:update()
@@ -669,7 +681,6 @@ function draw_mission_status(yorig)
 		print(requirement.count.." ("..requirement.got..")",24,yorig,requirement.got>=requirement.count and 11 or 8)
 		yorig+=6
 	end
-	draw_rip_status(yorig)
 	if(mission.complete)then
 		yorig+=6
 		print("well done!!!",0,yorig,10)
@@ -678,20 +689,13 @@ function draw_mission_status(yorig)
 	return yorig
 end
 
-function draw_rip_status(yorig,all)
+function draw_rip_status(yorig,dead_list)
 	yorig=yorig or 0
-	all=all or false
-	local list
-	if(all)then
-		list = dead_this_game
-	else
-		list = dead_this_mission
-	end
-	if(#list>0)then
+	if(#dead_list>0)then
 		yorig+=6
 		print("rip ",0,yorig,7)
-		for i=1,#list do
-			print(list[i],16+(i-1)*4*6,yorig,5)
+		for i=1,#dead_list do
+			print(dead_list[i],16+(i-1)*4*6,yorig,5)
 		end
 		yorig+=6
 	end
@@ -744,6 +748,15 @@ function next_live_limpet_index()
 		end
 	end
 	return 0
+end
+
+function populate_limpets()
+	-- renew the gang
+	assert(#names>0)
+	while(#limpets<3)do
+		add(limpets,{name=names[1],health=100})
+		del(names,names[1])
+	end
 end
 
 function _init()
