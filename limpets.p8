@@ -18,7 +18,7 @@ objtimer=0
 limpets={}
 --mission status
 mission={}
-mission.count=0
+mission_count=0
 mission.complete=false
 
 function states.splash:init()
@@ -628,7 +628,7 @@ end
 
 function draw_mission_status(yorig)
 	yorig=yorig or 0
-	print("your mission is to "..mission.verb,0,yorig,7)
+	print("your "..(mission_count==0 and "" or "next ").."mission is to "..mission.verb,0,yorig,7)
 	yorig+=6
 	for j=1,#mission.required do
 		local requirement=mission.required[j]
