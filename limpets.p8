@@ -23,7 +23,7 @@ mission.complete=false
 
 function states.splash:init()
 	self.next_state="menu"
-	-- OOP!
+	-- oop!
 	states.menu.next_limpet=1
 	states.menu:populate_limpets()
 	states.menu:init_mission()
@@ -44,11 +44,14 @@ function states.splash:update()
 end
 
 function states.menu:init()
+	dead_this_mission={}
+	if(mission.complete)then
+		self:reap_dead_limpets()
+	end
 	if(next_live_limpet_index()==0)then
 		self.next_state="gameover"
 	else
 		self.next_state="play"
-		self:populate_limpets()
 	end
 end
 
@@ -62,13 +65,24 @@ function states.menu:update()
 	if(btnp(4) or btnp(5))then
 		if(mission.complete)then
 			self:init_mission()
+			self:populate_limpets()
 		else
 			update_state()
 		end
 	end
 end
 
+function states.menu:reap_dead_limpets()
+	for limpet in all(limpets)do
+		if(limpet.health<=0)then
+			add(dead_this_mission,limpet.name)
+			del(limpets,limpet)
+		end
+	end
+end
+
 function states.menu:populate_limpets()
+	-- renew the gang
 	local names={"huey","dewey","louie","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
 	while(#limpets<3)do
 		add(limpets,{name=names[self.next_limpet],health=100})
@@ -641,6 +655,14 @@ function draw_mission_status(yorig)
 		spr(requirement.obj,4,yorig)
 		print(' x ',12,yorig,12)
 		print(requirement.count.." ("..requirement.got..")",24,yorig,requirement.got>=requirement.count and 11 or 8)
+		yorig+=6
+	end
+	if(#dead_this_mission>0)then
+		yorig+=6
+		print("rip ",0,yorig,7)
+		for i=1,#dead_this_mission do
+			print(dead_this_mission[i],16+(i-1)*4*6,yorig,5)
+		end
 		yorig+=6
 	end
 	if(mission.complete)then
