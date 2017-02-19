@@ -22,6 +22,7 @@ mission_count=0
 mission.complete=false
 
 function states.splash:init()
+	dead_this_game={}
 	self.next_state="menu"
 	-- oop!
 	states.menu.next_limpet=1
@@ -44,11 +45,15 @@ function states.splash:update()
 end
 
 function states.menu:init()
+	for i in all(dead_this_mission) do
+		add(dead_this_game,i)
+	end
 	dead_this_mission={}
 	if(mission.complete)then
 		self:reap_dead_limpets()
 	end
 	if(next_live_limpet_index()==0)then
+		self:reap_dead_limpets()
 		self.next_state="gameover"
 	else
 		self.next_state="play"
@@ -602,10 +607,14 @@ end
 function states.gameover:draw()
 	cls()
 	print("game over :(",0,0,7)
+	draw_rip_status(12,true)
 end
 
 function states.gameover:update()
-	if(btnp(4) or btnp(5)) then update_state() end
+	if(btnp(4) or btnp(5)) then
+		dead_this_game={}
+		update_state()
+	end
 end
 
 function update_state()
@@ -660,17 +669,30 @@ function draw_mission_status(yorig)
 		print(requirement.count.." ("..requirement.got..")",24,yorig,requirement.got>=requirement.count and 11 or 8)
 		yorig+=6
 	end
-	if(#dead_this_mission>0)then
-		yorig+=6
-		print("rip ",0,yorig,7)
-		for i=1,#dead_this_mission do
-			print(dead_this_mission[i],16+(i-1)*4*6,yorig,5)
-		end
-		yorig+=6
-	end
+	draw_rip_status(yorig)
 	if(mission.complete)then
 		yorig+=6
 		print("well done!!!",0,yorig,10)
+		yorig+=6
+	end
+	return yorig
+end
+
+function draw_rip_status(yorig,all)
+	yorig=yorig or 0
+	all=all or false
+	local list
+	if(all)then
+		list = dead_this_game
+	else
+		list = dead_this_mission
+	end
+	if(#list>0)then
+		yorig+=6
+		print("rip ",0,yorig,7)
+		for i=1,#list do
+			print(list[i],16+(i-1)*4*6,yorig,5)
+		end
 		yorig+=6
 	end
 	return yorig
