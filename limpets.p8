@@ -50,20 +50,8 @@ end
 
 function states.menu:draw()
 	cls()
-	print("your limpets",0,0,7)
-	for i=1,#limpets do
-		local limpet = limpets[i]
-		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,6*i,limpet.health>0 and 12 or 8)
- end
- print("your mission is to "..mission.verb,0,6*#limpets+12,7)
-	for j=1,#mission.required do
-		local requirement=mission.required[j]
-		local i=requirement
-		local y = 6*#limpets+12+6*j
-		spr(requirement.obj,4,y)
-		print(' x ',12,y,12)
-		print(requirement.count.." ("..requirement.got..")",24,y,requirement.got>=requirement.count and 11 or 8)
-	end
+	local h=draw_limpets_status()
+	draw_mission_status(h+6)
 end
 
 function states.menu:update()
@@ -619,6 +607,39 @@ end
 
 function clamp(val,minv,maxv)
 	return max(minv,min(val,maxv))
+end
+
+function draw_limpets_status(yorig)
+	yorig=yorig or 0
+	print("your limpets",0,yorig,7)
+	yorig+=6
+	for i=1,#limpets do
+		local limpet = limpets[i]
+		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,yorig,limpet.health>0 and 12 or 8)
+		yorig+=6
+	end
+	return yorig
+end
+
+function draw_mission_status(yorig)
+	yorig=yorig or 0
+	printh(yorig)
+	print("your mission is to "..mission.verb,0,yorig,7)
+	yorig+=6
+	for j=1,#mission.required do
+		local requirement=mission.required[j]
+		local i=requirement
+		spr(requirement.obj,4,yorig)
+		print(' x ',12,yorig,12)
+		print(requirement.count.." ("..requirement.got..")",24,yorig,requirement.got>=requirement.count and 11 or 8)
+		yorig+=6
+	end
+	if(mission.complete)then
+		yorig+=6
+		print("well done!!!",10,4,yorig)
+		yorig+=6
+	end
+	return yorig
 end
 
 function line_intersects_convex_poly(x1,y1,x2,y2,poly)
