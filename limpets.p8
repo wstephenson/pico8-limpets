@@ -201,7 +201,7 @@ function states.play:draw()
 
 	-- grabbed object
 	if(self.object != nil)then
-	spr(16+self.object.c,self.x,self.y-8)
+	spr(self.object.c,self.x,self.y-8)
 	end
 
 	-- grabber
@@ -244,7 +244,7 @@ function states.play:draw()
 	-- other objects
 	for item in all(self.objects)do
 		if(item != self.object) then
-			spr(16+item.c, item.x, item.y)
+			spr(item.c, item.x, item.y)
 		end
 	end
 
@@ -263,7 +263,7 @@ function states.play:draw()
 		print("vy:"..self.vy, 45, 100, 7)
 		print("tx:"..self.tx, 0, 107, 7)
 		print("ty:"..self.ty, 45, 107, 7)
-		print("l:"..self.laser, 0, 114, 7)
+		print("i:"..(self.object and self.object.c or '%'), 0, 114, 7)
 	else
 		print(self.limpet.name, 45, 120, 14)
 		print("s:"..self.score, 80, 120, 10)
@@ -403,7 +403,7 @@ function states.play:update()
 			newobj.y=self.lasery
 			newobj.vx=rnd(1)-0.5
 			newobj.vy=rnd(1)+0.2
-			newobj.c=rnd(6)
+			newobj.c=16+flr(rnd(6))
 			add(self.objects,newobj)
 			add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
 			self:make_explosion(newobj,newobj.vx,newobj.vy)
@@ -454,6 +454,7 @@ function states.play:update()
 		-- in scoop?
 		if (self:in_scoop())then
 			self:do_score(self.object)
+			self:is_mission_complete()
 			del(self.objects,self.object)
 			self.object=nil
 		else
@@ -526,6 +527,12 @@ end
 function states.play:do_score(item)
 	self.score+=1
 	self.limpet.health=min(self.limpet.health+5,100)
+	for i in all(mission.required) do
+		if(i.obj==item.c)then
+			i.got+=1
+			break
+		end
+	end
 end
 
 function states.play:hit_shield(item)
@@ -543,6 +550,7 @@ function states.menu:init_mission()
 	mission.required={}
 	mission.obtained={}
 	mission.verb="obtain"
+	mission.complete=false
 	add(mission.required,{obj=16,count=1,got=0})
 end
 
