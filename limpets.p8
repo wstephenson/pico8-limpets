@@ -16,6 +16,9 @@ states.gameover={}
 objtimer=0
 --limpet list
 limpets={}
+--mission status
+mission={}
+mission.complete=true
 
 function states.splash:init()
 	self.next_state="menu"
@@ -37,9 +40,11 @@ function states.menu:init()
 	if(next_live_limpet_index()==0)then
 		self.next_state="gameover"
 	else
+		if(mission.complete)then
+			self:init_mission()
+		end
 		self.next_state="play"
 		self:populate_limpets()
-		self:init_mission()
 	end
 end
 
@@ -50,6 +55,15 @@ function states.menu:draw()
 		local limpet = limpets[i]
 		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,6*i,limpet.health>0 and 12 or 8)
  end
+ print("your mission is to "..mission.verb,0,6*#limpets+12,7)
+	for j=1,#mission.required do
+		local requirement=mission.required[j]
+		local i=requirement
+		local y = 6*#limpets+12+6*j
+		spr(requirement.obj,4,y)
+		print(' x ',12,y,12)
+		print(requirement.count.." ("..requirement.got..")",24,y,requirement.got>=requirement.count and 11 or 8)
+	end
 end
 
 function states.menu:update()
