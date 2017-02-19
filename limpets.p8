@@ -11,17 +11,36 @@ states.menu={}
 states.play={}
 --global event timer
 objtimer=0
+--limpet list
+limpets={}
 
 function states.menu:init()
 	self.next_state="play"
+	self.next_limpet=1
+	self:populate_limpets()
 end
 
 function states.menu:draw()
 	cls()
-	print "limpet control"
+	print("limpet control",0,0,7)
+ for i=1,#limpets do
+		local limpet = limpets[i]
+		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,6*i,12)
+ end
 end
 
 function states.menu:update()
+end
+
+function states.menu:populate_limpets()
+	local names={"huey","dewey","louie","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
+	while(#limpets<3)do
+		add(limpets,{name=names[self.next_limpet],health=100})
+		self.next_limpet+=1
+		if self.next_limpet>#names then
+			self.next_limpet=1
+		end
+	end
 end
 
 function states.play:init()
@@ -554,7 +573,7 @@ function line_intersects_line(x0,y0,x1,y1,x2,y2,x3,y3)
 end
 
 function _init()
-	state="play"
+	state="menu"
 	for k,v in pairs(states) do v:init() end
 end
 
