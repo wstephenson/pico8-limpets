@@ -544,24 +544,26 @@ function states.play:consume_fuel()
 	if(self.limpet.health<30)then
 		sfx(3,3)
 	end
-	if(self.limpet.health<0)then
+	if(self.limpet.health<=0)then
 		self:do_death()
 	end
 end
 
 function states.play:do_death()
-	sfx(-1,3)
-	sfx(-2,3)
-	self.limpet.health=0
-	self.deathtimer=3*30
-	self:make_explosion(self,0,0)
-	self.txneg=false
-	self.txpos=false
-	self.tyneg=false
-	self.typos=false
-	self.grabbed=false
-	self.tx=0
-	self.ty=0
+	if(self.deathtimer==0)then
+		sfx(-1,3)
+		sfx(-1,2)
+		self.limpet.health=0
+		self.deathtimer=3*30
+		self:make_explosion(self,0,0)
+		self.txneg=false
+		self.txpos=false
+		self.tyneg=false
+		self.typos=false
+		self.grabbed=false
+		self.tx=0
+		self.ty=0
+	end
 end
 
 function states.play:do_score(item)
