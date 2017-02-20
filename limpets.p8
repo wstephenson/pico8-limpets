@@ -456,8 +456,8 @@ function states.play:update()
 	for item in all(self.objects) do
 		item.x += item.vx
 		item.y += item.vy
-		item.vx-=item.vx/75
-		item.vy-=item.vy/75
+		item.vx-=item.vx/(rnd(25)+75)
+		item.vy-=item.vy/(rnd(25)+75)
 		item.ttl-=1
 		local dead=false
 		if(self:hit_shield(item) and item!=self.object) then
