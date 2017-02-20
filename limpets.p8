@@ -17,7 +17,7 @@ states.gameover={}
 objtimer=0
 --limpet list
 limpets={}
-names={"huey","dewey","louie","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
+names={"huey","dewey","louie","tick","trick","track","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
 --mission status
 mission={}
 mission_count=0
