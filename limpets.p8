@@ -20,12 +20,12 @@ limpets={}
 names={"huey","dewey","louie","tick","trick","track","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
 --mission status
 mission={}
-mission_count=0
-mission.complete=false
+mission_number=0
 
 function states.splash:init()
 	dead_this_game={}
 	self.next_state="briefing"
+	self:init_activities_missions()
 end
 
 function states.splash:draw()
@@ -40,6 +40,13 @@ end
 
 function states.splash:update()
 	if(btnp(4) or btnp(5)) then update_state() end
+end
+
+function states.splash:init_activities_missions()
+	mission_number=0
+	activities={{name="mining",
+			verb="mine",
+			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}}}}
 end
 
 function states.briefing:init()
@@ -62,12 +69,23 @@ function states.briefing:update()
 end
 
 function states.briefing:init_mission()
+ -- assumes game is made up of N activities x M missions
+	local missioncount = #activities[1].missions
+	local activity_i=flr(mission_number / missioncount)+1
+	local mission_i=(mission_number % missioncount)+1
+	printh("mission_number "..mission_number..", #missions "..missioncount..", activity_i "..activity_i..", mission_i "..mission_i)
+	local activity=activities[activity_i]
+	local mission_data=activity.missions[mission_i]
 	mission={}
+	mission.name=activity.name
+	mission.verb=activity.verb
 	mission.required={}
-	mission.obtained={}
-	mission.verb="obtain"
 	mission.complete=false
-	add(mission.required,{obj=16,count=1,got=0})
+	printh("mission: "..mission.name..", verb: "..mission.verb)
+	for m in all(mission_data) do
+		add(mission.required,{obj=m[1],count=m[2],got=0})
+		printh("  obj: "..m[1]..", count: "..m[2])
+	end
 end
 
 function states.play:init()
@@ -464,6 +482,7 @@ function states.play:update()
 			self:do_score(self.object)
 			if(self:is_mission_complete())then
 				sfx(5)
+				mission_number+=1
 				self.next_state="summary"
 				update_state()
 			end
