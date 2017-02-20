@@ -565,12 +565,10 @@ function states.play:do_drone_score(item)
 		if(i.obj==item.c)then
 			i.count+=1
 			found=true
-			printh("located entry for: "..item.c.." now: "..i.count)
 			break;
 		end
 	end
 	if(not found) then
-		printh("added entry for: "..item.c)
 		add(self.limpet.score,{obj=item.c,count=1})
 	end
 end
