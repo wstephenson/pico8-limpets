@@ -289,7 +289,6 @@ function states.play:update()
 	local y = self.y
 	local grabbed = self.grabbed
 
-	age_transients(self.burn_decals)
 
 	-- controls
 	if(self.limpet.health>0)then
@@ -528,6 +527,7 @@ function states.play:update()
 		p.xv *= 0.95
 		p.yv *= 0.95
 	end
+	age_transients(self.burn_decals)
 	age_transients(self.particles)
 end
 
