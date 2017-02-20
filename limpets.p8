@@ -281,8 +281,6 @@ function states.play:draw()
 end
 
 function states.play:update()
-	local tx = self.tx
-	local ty = self.ty
 	local vx = self.vx
 	local vy = self.vy
 	local x = self.x
@@ -291,6 +289,11 @@ function states.play:update()
 
 
 	-- controls
+	self.txpos=false
+	self.txneg=false
+	self.typos=false
+	self.tyneg=false
+
 	if(self.limpet.health>0)then
 		if(btn(4)) then
 			if(not grabbed and self.grabber_cooldown==0) then
@@ -307,46 +310,16 @@ function states.play:update()
 		end
 
 		if(btn(0)) then
-			self:consume_fuel()
-			tx=max(tx-tinc, -tmax)
-			txpos=false
-			txneg=true
-		else
-			if(btn(1)) then
-				self:consume_fuel()
-				tx=min(tx+tinc, tmax)
-				txpos=true
-				txneg=false
-			else
-				txpos=false
-				txneg=false
-				if(tx<0) then
-					tx=min(tx+tdec, 0)
-				else
-					tx=max(tx-tdec, 0)
-				end
-			end
+			self.txneg=true
+		end
+		if(btn(1)) then
+			self.txpos=true
 		end
 		if(btn(2)) then
-			self:consume_fuel()
-			ty=max(ty-tinc, -tmax)
-			typos=false
-			tyneg=true
-		else
-			if(btn(3)) then
-				self:consume_fuel()
-				ty=min(ty+tinc, tmax)
-				typos=true
-				tyneg=false
-			else
-				typos=false
-				tyneg=false
-				if(ty<0) then
-					ty=min(ty+tdec,0)
-				else
-					ty=max(ty-tdec,0)
-				end
-			end
+			self.tyneg=true
+		end
+		if(btn(3)) then
+			self.typos=true
 		end
 	else -- dead
 		self.deathtimer-=1
@@ -362,14 +335,42 @@ function states.play:update()
 		end
 	end
 
-	-- set thruster flags
-	self.txneg = txneg
-	self.txpos = txpos
-	self.tyneg = tyneg
-	self.typos = typos
+	-- set thrust from thruster flags
+	-- x thrust
+	if(self.txneg)then
+		self:consume_fuel()
+		self.tx=max(self.tx-tinc, -tmax)
+	else
+		if(self.txpos)then
+			self:consume_fuel()
+			self.tx=min(self.tx+tinc, tmax)
+		else
+			if(abs(self.tx)<0.01)then
+				self.tx=0
+			else
+				self.tx-=self.tx/4
+			end
+		end
+	end
+	-- y thrust
+	if(self.tyneg)then
+		self:consume_fuel()
+		self.ty=max(self.ty-tinc, -tmax)
+	else
+		if(self.typos)then
+			self:consume_fuel()
+			self.ty=min(self.ty+tinc, tmax)
+		else
+			if(abs(self.ty)<0.01)then
+				self.ty=0
+			else
+				self.ty-=self.ty/4
+			end
+		end
+	end
 	-- apply acceleration
-	vx+=tx
-	vy+=ty
+	vx+=self.tx
+	vy+=self.ty
 	-- abs limits
 	vx=clamp(vx,-maxv,maxv)
 	vy=clamp(vy,-maxv,maxv)
@@ -386,13 +387,12 @@ function states.play:update()
 	-- update position
 	x+=vx
 	y+=vy
-	if(x<=0 or x>=120)then vx=0 tx=0 end
-	if(y<=0 or y>=120)then vy=0 ty=0 end
+	if(x<=0 or x>=120)then vx=0 self.tx=0 end
+	if(y<=0 or y>=120)then vy=0 self.ty=0 end
 	x=clamp(x,0,120)
 	y=clamp(y,0,120)
 
-	self.tx = tx
-	self.ty = ty
+	-- save temporaries
 	self.vx = vx
 	self.vy = vy
 	self.x = x
@@ -651,7 +651,6 @@ function states.summary:draw()
 	cls()
 	local h=draw_limpets_status(0,true)
 	h=draw_mission_status(h+6)
-	--printh(#states.play.dead_this_mission)
 	draw_rip_status(h,states.play.dead_this_mission)
 end
 
