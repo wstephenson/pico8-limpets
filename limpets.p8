@@ -302,7 +302,12 @@ function states.play:draw()
 	-- other objects
 	for item in all(self.objects)do
 		if(item != self.object) then
-			spr(item.c, item.x, item.y)
+			local soffset=0
+			-- special cased animation for spacemen
+			if(item.c==36)then
+				soffset = flr((objtimer%20) / 5)
+			end
+			spr(item.c+soffset, item.x, item.y)
 		end
 	end
 
