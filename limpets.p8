@@ -283,6 +283,19 @@ function states.play:draw()
 	else
 		print(self.limpet.name, 45, 120, 14)
 	end
+
+	-- required items
+	self:draw_shopping_list()
+end
+
+function states.play:draw_shopping_list()
+	local count=1
+	for reqt in all(mission.required) do
+		if(reqt.got < reqt.count) then
+			spr(reqt.obj,67+count*6,118)
+			count+=1
+		end
+	end
 end
 
 function states.play:update()
