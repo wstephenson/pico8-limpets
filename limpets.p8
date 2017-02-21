@@ -655,7 +655,7 @@ end
 function states.summary:draw()
 	cls()
 	local h=draw_limpets_status(0,true)
-	h=draw_mission_status(h+6)
+	h=draw_mission_status(h+6,mission.complete or self:they_are_all_dead())
 	draw_rip_status(h,states.play.dead_this_mission)
 end
 
@@ -749,9 +749,10 @@ function draw_limpets_status(yorig,score)
 	return yorig
 end
 
-function draw_mission_status(yorig)
+function draw_mission_status(yorig, retro)
 	yorig=yorig or 0
-	print("your "..(mission_count==0 and "" or "next ").."mission is to "..mission.verb,0,yorig,7)
+	retro=retro or false
+	print("your "..((mission_number==0 or retro) and "" or "next ").."mission "..(retro and "was " or "is ").."to "..mission.verb,0,yorig,7)
 	yorig+=6
 	for j=1,#mission.required do
 		local requirement=mission.required[j]
