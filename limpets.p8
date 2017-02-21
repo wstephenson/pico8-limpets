@@ -486,7 +486,7 @@ function states.play:update()
 				newobj.y=self.lasery
 				newobj.vx=rnd(1)-0.5
 				newobj.vy=rnd(1)+0.2
-				newobj.c=mission.objects[flr(rnd(#mission.objects))]
+				newobj.c=mission.objects[flr(rnd(#mission.objects))+1]
 				newobj.ttl=30*8
 				add(self.objects,newobj)
 				add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
