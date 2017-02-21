@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 8
+version 10
 __lua__
 -- vim: set ft=lua ts=1 sw=1 noet:
 --current game state
@@ -17,6 +17,7 @@ states.gameover={}
 objtimer=0
 --limpet list
 limpets={}
+current_limpet=0
 names={"huey","dewey","louie","tick","trick","track","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
 --mission status
 mission={}
@@ -26,6 +27,7 @@ function states.splash:init()
 	dead_this_game={}
 	self.next_state="briefing"
 	self:init_activities_missions()
+	current_limpet=1
 end
 
 function states.splash:draw()
@@ -56,25 +58,28 @@ end
 
 function states.briefing:init()
 	self.next_state="play"
-	self.next_limpet=1
 	populate_limpets()
 	self:init_mission()
 end
 
 function states.briefing:draw()
 	cls()
-	local h=draw_limpets_status()
+	local h=draw_limpets_status(0,false,current_limpet)
 	draw_mission_status(h+6)
 end
 
 function states.briefing:update()
+	objtimer+=1
+	if(btnp(3))then
+		current_limpet=next_live_limpet_index()
+	end
 	if(btnp(4) or btnp(5))then
 		update_state()
 	end
 end
 
 function states.briefing:init_mission()
- -- assumes game is made up of N activities x M missions
+	-- assumes game is made up of n activities x m missions
 	local missioncount = #activities[1].missions
 	local activity_i=flr(mission_number / missioncount)+1
 	local mission_i=(mission_number % missioncount)+1
@@ -99,7 +104,7 @@ function states.play:init()
 	tdec=tinc*2
 	tmax=1
 	maxv=3
-	self.lindex=next_live_limpet_index()
+	self.lindex=current_limpet
 	self.limpet=limpets[self.lindex]
 	self.next_state="briefing"
 	self.shldx=64
@@ -660,6 +665,9 @@ function states.summary:init()
 			self:reap_dead_limpets()
 			self.next_state="gameover"
 		else
+			if(limpets[current_limpet].health<=0)then
+				current_limpet=next_live_limpet_index()
+			end
 			self.next_state="play"
 		end
 	end
@@ -667,12 +675,17 @@ end
 
 function states.summary:draw()
 	cls()
-	local h=draw_limpets_status(0,true)
-	h=draw_mission_status(h+6,mission.complete or self:they_are_all_dead())
+	local not_in_mission=(mission.complete or self:they_are_all_dead())
+	local h=draw_limpets_status(0,true,(not_in_mission and 0 or current_limpet))
+	h=draw_mission_status(h+6,not_in_mission)
 	draw_rip_status(h,states.play.dead_this_mission)
 end
 
 function states.summary:update()
+	objtimer+=1
+	if(btnp(3))then
+		current_limpet=next_live_limpet_index()
+	end
 	if(btnp(4) or btnp(5)) then
 		for i in all(states.play.dead_this_mission) do
 			add(dead_this_game,i)
@@ -741,13 +754,17 @@ function clamp(val,minv,maxv)
 	return max(minv,min(val,maxv))
 end
 
-function draw_limpets_status(yorig,score)
+function draw_limpets_status(yorig,score,active)
 	yorig=yorig or 0
 	score=score or false
-	print("your limpets",0,yorig,7)
+	active=active or 0
+	print("your limpets"..(active>0 and " (ƒ cycle)" or ""),0,yorig,7)
 	yorig+=6
 	for i=1,#limpets do
 		local limpet = limpets[i]
+		if(active == i and objtimer % 30 < 15)then
+			spr(34,0,yorig)
+		end
 		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,yorig,limpet.health>0 and 12 or 8)
 		yorig+=6
 		if(score and #limpet.score>0)then
@@ -836,12 +853,25 @@ function line_intersects_line(x0,y0,x1,y1,x2,y2,x3,y3)
 end
 
 function next_live_limpet_index()
-	for i=1,#limpets do
+	local i = current_limpet
+	if(#limpets==0)then
+		return 0
+	end
+	while(true)do
+		i+=1
+		-- back to start and none alive
+		if(i==current_limpet)then
+			i=0
+			break
+		end
+		if(i>#limpets)then
+			i=1
+		end
 		if(limpets[i].health>0)then
-			return i
+			break
 		end
 	end
-	return 0
+	return i
 end
 
 function populate_limpets()
@@ -882,13 +912,13 @@ ddd0dd5ddd0ddd5ddddd0d5d000000000c100000000001c00000000000000000000000000cc10000
 004400000033000000bb000000cc0000002200000099000000000000000000005550050500022000000655000006650000066500000566000005560000056600
 00000000000000000000000000000000000000000000000000000000000000005505055500022000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000005555555500022000000000000000000000000000000000000000000000000000
-000000000000000000000000000cc00000000000000cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000000000000000000001100000000000000cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00067700000000000000000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00666660000000000000000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00666660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00056600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000ccc00000000cc00000000000000cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000ccc000ccc000000001100000000000000cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000677000cc0cc00ccc0000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0066666000c0c0000c00000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0066666000ccc000c0c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000566000c0c0c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000c0c0c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
