@@ -157,11 +157,23 @@ function states.play:init()
 	--testrock.c = 0
 	--add(self.objects,testrock)
 
+	-- init background objects
 	for i=1,100 do
 		local star = {}
 		star.x = rnd(128)
 		star.y = rnd(128)
 		add(self.stars,star)
+	end
+
+	if(mission.name=="collection")then
+		local newobj={}
+		newobj.x=64
+		newobj.y=64
+		newobj.vx=0
+		newobj.vy=0
+		newobj.c=26
+		newobj.ttl=-1
+		add(self.objects,newobj)
 	end
 end
 
