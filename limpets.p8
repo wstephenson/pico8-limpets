@@ -499,13 +499,15 @@ function states.play:update()
 		item.y += item.vy
 		item.vx-=item.vx/(rnd(25)+75)
 		item.vy-=item.vy/(rnd(25)+75)
-		item.ttl-=1
+		if(item.ttl!=-1)then
+			item.ttl-=1
+		end
 		local dead=false
 		if(self:hit_shield(item) and item!=self.object) then
 			self.shldf=true
 			dead=true
 		end
-		if(item.y>128 or item.ttl<1)then
+		if(item.y>128 or item.ttl==0)then
 			dead=true
 		end
 		if(dead)then
