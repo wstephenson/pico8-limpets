@@ -49,7 +49,7 @@ function states.splash:update()
 end
 
 function states.splash:init_activities_missions()
-	mission_number=0
+	mission_number=0 -- starts with 0
 	activities={}
 	local mining={
 			name="mining",
@@ -166,23 +166,36 @@ end
 
 function states.play:draw()
 	cls()
+	-- background
 	-- stars
 	for i=1,#self.stars do
 	local star=self.stars[i]
 		line(star.x,star.y,star.x,star.y,(objtimer*i%2==0) and 12 or 1)
 	end
 
-	-- asteroid
-	circfill(64,-64,80,5)
-	for i in all(self.burn_decals) do
-		palt(0,false)
-		palt(5,true)
-		spr(24,i.x,i.y)
-		palt()
+	if(mission.name=="mining")then
+		-- asteroid
+		circfill(64,-64,80,5)
+		for i in all(self.burn_decals) do
+			palt(0,false)
+			palt(5,true)
+			spr(24,i.x,i.y)
+			palt()
+		end
+
+		-- mining laser
+		if(self:laser_on()) then
+			local lcolor = 2
+			if(flr(objtimer)%2==0)then
+				lcolor = 14
+			end
+			line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
+		end
 	end
 
 	-- ship hull
 	rectfill(32,116,96,127,6)
+	-- drop indicator
 	if(self:in_scoop() and self.object)then
 		rect(54,116,74,126,3)
 		rect(55,116,73,125,11)
@@ -203,24 +216,10 @@ function states.play:draw()
 		self.shldf=false
 	end
 
+	-- ship shield
 	circ(self.shldx, self.shldy, self.shldr, shield_color)
 
-	-- mining laser
-	if(self:laser_on()) then
-		local lcolor = 2
-		if(flr(objtimer)%2==0)then
-			lcolor = 14
-		end
-		line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
-	end
-
-	-- laser indicator
-	if (self.laser>0)then
-		line(self.lorigx,126,self.lorigx,117+(self.laser/(self.laserson*30))*10,12)
-	else
-		line(self.lorigx,126,self.lorigx,117-(self.laser/(self.lasersoff*30))*10,2)
-	end
-
+	-- foreground objects
 	-- drone
 	spr(self.lindex-1, self.x, self.y)
 	spr(22,self.x-8,self.y)
@@ -284,9 +283,22 @@ function states.play:draw()
 		line(p.x,p.y,p.x-p.xv,p.y-p.yv,p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8))
 	end
 
+	-- HUD
  -- health
 	local hpercent=self.limpet.health/100
 	rect(126,126,127,127-hpercent*127,hpercent > 0.8 and 3 or (hpercent>0.5 and 11 or (hpercent>0.2 and 9 or 8)))
+
+	if(mission.name=="mining")then
+		-- laser indicator
+		if (self.laser>0)then
+			line(self.lorigx,126,self.lorigx,117+(self.laser/(self.laserson*30))*10,12)
+		else
+			line(self.lorigx,126,self.lorigx,117-(self.laser/(self.lasersoff*30))*10,2)
+		end
+	end
+
+	-- required items
+	self:draw_shopping_list()
 
  -- debug
 	if(false) then
@@ -298,9 +310,6 @@ function states.play:draw()
 	else
 		print(self.limpet.name, 45, 120, 14)
 	end
-
-	-- required items
-	self:draw_shopping_list()
 end
 
 function states.play:draw_shopping_list()
