@@ -166,14 +166,23 @@ function states.play:init()
 	end
 
 	if(mission.name=="collection")then
-		local newobj={}
-		newobj.x=64
-		newobj.y=64
-		newobj.vx=0
-		newobj.vy=0
-		newobj.c=26
-		newobj.ttl=-1
-		add(self.objects,newobj)
+		-- create array of object types containing required ones
+		local objs={}
+		for i in all(mission.required) do
+			for j=1,i.count do
+				add(objs,i.obj)
+			end
+		end
+		for i in all(objs) do
+			local newobj={}
+			newobj.x=rnd(100)+10
+			newobj.y=rnd(80)+20
+			newobj.vx=0
+			newobj.vy=0
+			newobj.c=i
+			newobj.ttl=-1
+			add(self.objects,newobj)
+		end
 	end
 end
 
