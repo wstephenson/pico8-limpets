@@ -51,9 +51,19 @@ end
 
 function states.splash:init_activities_missions()
 	mission_number=0
-	activities={{name="mining",
+	activities={}
+	local mining={
+			name="mining",
 			verb="mine",
-			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}}}}
+			objects={16,17,18,19,20,21},
+			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}}}
+	local collection={
+			name="collection",
+			verb="collect",
+			objects={26,27,28,29,30,31},
+			missions={{{26,1}},{{27,2},{28,2}},{{29,3}}}}
+	add(activities,collection)
+	add(activities,mining)
 end
 
 function states.briefing:init()
@@ -88,6 +98,7 @@ function states.briefing:init_mission()
 	local mission_data=activity.missions[mission_i]
 	mission={}
 	mission.name=activity.name
+	mission.objects=activity.objects
 	mission.verb=activity.verb
 	mission.required={}
 	mission.complete=false
