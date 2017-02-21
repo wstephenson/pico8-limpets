@@ -40,7 +40,6 @@ function states.splash:draw()
 	print("‹‘”ƒ to control thrust",4,36,7)
 	print("hold —(z key) to grab",4,42,7)
 
-
 	print("get correct item to refuel",4,54,7)
 	print("complete mission to restock",4,66,7)
 end
