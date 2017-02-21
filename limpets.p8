@@ -445,50 +445,52 @@ function states.play:update()
 	-- update event timer
 	objtimer+=1
 
-	-- move mining laser aim
-	self.laserx=64+sin((objtimer%100)/100)*20
-	self.lasery=8+cos((objtimer%100)/100)*5
+	if(mission.name=="mining")then
+		-- move mining laser aim
+		self.laserx=64+sin((objtimer%100)/100)*20
+		self.lasery=8+cos((objtimer%100)/100)*5
 
-	-- update laser state
-	self.laser = objtimer % ((self.laserson+self.lasersoff)*30) - self.lasersoff*30
-	if(self.laser>0)then
-		sfx(8,2)
-	else
-		sfx(-1,2)
-	end
-	-- spawn rocks
-	if(self:laser_on())then
-		if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-			local newobj={}
-			newobj.x=self.laserx
-			newobj.y=self.lasery
-			newobj.vx=rnd(1)-0.5
-			newobj.vy=rnd(1)+0.2
-			newobj.c=mission.objects[flr(rnd(#mission.objects))]
-			newobj.ttl=30*8
-			add(self.objects,newobj)
-			add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
-			self:make_explosion(newobj,newobj.vx,newobj.vy)
-			sfx(7)
+		-- update laser state
+		self.laser = objtimer % ((self.laserson+self.lasersoff)*30) - self.lasersoff*30
+		if(self.laser>0)then
+			sfx(8,2)
+		else
+			sfx(-1,2)
 		end
+		-- spawn rocks
+		if(self:laser_on())then
+			if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
+				local newobj={}
+				newobj.x=self.laserx
+				newobj.y=self.lasery
+				newobj.vx=rnd(1)-0.5
+				newobj.vy=rnd(1)+0.2
+				newobj.c=mission.objects[flr(rnd(#mission.objects))]
+				newobj.ttl=30*8
+				add(self.objects,newobj)
+				add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
+				self:make_explosion(newobj,newobj.vx,newobj.vy)
+				sfx(7)
+			end
 
-		-- laser burn trace
-		if(objtimer % 2 == 0)then
-			add(self.particles,{x=self.laserx,y=self.lasery,xv=0,yv=0,ttl=10})
-		end
+			-- laser burn trace
+			if(objtimer % 2 == 0)then
+				add(self.particles,{x=self.laserx,y=self.lasery,xv=0,yv=0,ttl=10})
+			end
 
-		-- has laser hit limpet?
-		local hit
-		local hx
-		local hy
-		hit,hx,hy=self:laser_hit()
-		if(hit)then
-			-- only do laser damage on every 3rd update
-			if(objtimer % 3 == 0)then
-				self:make_explosion({x=hx,y=hy},0,0)
-				self.limpet.health-=self:laser_damage()
-				if(self.limpet.health<0)then
-					self:do_death()
+			-- has laser hit limpet?
+			local hit
+			local hx
+			local hy
+			hit,hx,hy=self:laser_hit()
+			if(hit)then
+				-- only do laser damage on every 3rd update
+				if(objtimer % 3 == 0)then
+					self:make_explosion({x=hx,y=hy},0,0)
+					self.limpet.health-=self:laser_damage()
+					if(self.limpet.health<0)then
+						self:do_death()
+					end
 				end
 			end
 		end
