@@ -19,6 +19,7 @@ objtimer=0
 limpets={}
 current_limpet=0
 names={"huey","dewey","louie","tick","trick","track","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","alan","wayne","merrill","jay","donny","marie","jimmy"}
+limpet_colors={{12,1},{10,4},{14,2},{11,3},{13,5},{9,4},{8,3},{7,5}}
 --mission status
 mission={}
 mission_number=0
@@ -229,7 +230,10 @@ function states.play:draw()
 		if(limpet==self.limpet)then goto continue end
 		local x=64+8*i
 		local spritenum = (limpet.health>0 and i-1 or 25)
+		pal(13,limpet.fg)
+		pal(5,limpet.bg)
 		spr(spritenum, x, 108)
+		pal()
   ::continue::
 	end
 	local shield_color=1
@@ -243,9 +247,12 @@ function states.play:draw()
 
 	-- foreground objects
 	-- drone
+	pal(13,self.limpet.fg)
+	pal(5,self.limpet.bg)
 	spr(self.lindex-1, self.x, self.y)
 	spr(22,self.x-8,self.y)
 	spr(23,self.x+8,self.y)
+	pal()
 
 	-- grabbed object
 	if(self.object != nil)then
@@ -812,7 +819,7 @@ function draw_limpets_status(yorig,score,active)
 		if(active == i and objtimer % 30 < 15)then
 			spr(34,0,yorig)
 		end
-		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,yorig,limpet.health>0 and 12 or 8)
+		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,yorig,limpet.health>0 and limpet.fg or 5)
 		yorig+=6
 		if(score and #limpet.score>0)then
 			for i=1,#limpet.score do
@@ -925,7 +932,10 @@ function populate_limpets()
 	-- renew the gang
 	assert(#names>0)
 	while(#limpets<3)do
-		add(limpets,{name=names[1],health=100,score={}})
+		colorscheme=limpet_colors[1]
+		add(limpets,{name=names[1],health=100,score={},fg=colorscheme[1],bg=colorscheme[2]})
+		del(limpet_colors,colorscheme)
+		add(limpet_colors,colorscheme)
 		del(names,names[1])
 	end
 end
