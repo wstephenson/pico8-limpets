@@ -32,10 +32,15 @@ function states.splash:draw()
 	cls()
 	print("limpet control",0,0,7)
 	print("retrieve space junk",4,12,7)
-	print("avoid the laser",4,18,7)
+	print("drop it when the bay is green",4,18,7)
+	print("avoid the laser",4,24,7)
 
-	print("‹‘”ƒ to control thrust",4,30,7)
-	print("hold — to grab",4,36,7)
+	print("‹‘”ƒ to control thrust",4,36,7)
+	print("hold —(z key) to grab",4,42,7)
+
+
+	print("get correct item to refuel",4,54,7)
+	print("complete mission to restock",4,66,7)
 end
 
 function states.splash:update()
