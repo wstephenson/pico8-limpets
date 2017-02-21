@@ -61,6 +61,12 @@ function states.splash:init_activities_missions()
 			verb="collect",
 			objects={26,27,28,29,30,31},
 			missions={{{26,1}},{{27,2},{28,2}},{{29,3}}}}
+	local rescue={
+			name="rescue",
+			verb="rescue",
+			objects={36},
+			missions={{{36,1}},{{36,2}},{{36,3}}}}
+	add(activities,rescue)
 	add(activities,collection)
 	add(activities,mining)
 end
@@ -165,7 +171,7 @@ function states.play:init()
 		add(self.stars,star)
 	end
 
-	if(mission.name=="collection")then
+	if(mission.name=="collection" or mission.name=="rescue")then
 		-- create array of object types containing required ones
 		local objs={}
 		for i in all(mission.required) do
