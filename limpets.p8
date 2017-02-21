@@ -89,6 +89,7 @@ end
 
 function states.briefing:init_mission()
 	-- assumes game is made up of n activities x m missions
+	-- this will break if activities do not each have the same number of missions
 	local missioncount = #activities[1].missions
 	local activity_i=flr(mission_number / missioncount)+1
 	local mission_i=(mission_number % missioncount)+1
