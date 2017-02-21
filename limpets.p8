@@ -179,6 +179,16 @@ function states.play:init()
 				add(objs,i.obj)
 			end
 		end
+		-- particle type for mission
+		local material=0
+		if(mission.name=="rescue")then
+			material=2
+		else
+			if(mission.name=="collection")then
+				material=1
+			end
+		end
+
 		for i in all(objs) do
 			local newobj={}
 			newobj.x=rnd(100)+10
@@ -187,6 +197,7 @@ function states.play:init()
 			newobj.vy=0
 			newobj.c=i
 			newobj.ttl=-1
+			newobj.material=material
 			add(self.objects,newobj)
 		end
 	end
@@ -313,7 +324,23 @@ function states.play:draw()
 
  -- particles
 	for p in all(self.particles) do
-		line(p.x,p.y,p.x-p.xv,p.y-p.yv,p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8))
+		local pcolor=0
+		printh("p.kind: "..p.kind)
+		-- flames
+		if(p.kind==0)then
+			pcolor = p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8)
+			printh('flames '..pcolor)
+		end
+		-- scrap
+		if(p.kind==1)then
+			pcolor = p.ttl > 12 and 7 or (p.ttl > 7 and 6 or 7)
+			printh('scrap '..pcolor)
+		end
+		-- gore
+		if(p.kind==2)then
+			pcolor = p.ttl > 12 and 14 or (p.ttl > 7 and 8 or 2)
+		end
+		line(p.x,p.y,p.x-p.xv,p.y-p.yv,pcolor)
 	end
 
 	-- HUD
@@ -587,7 +614,7 @@ function states.play:update()
 			end
 		end
 		-- crashes
-		if(mission.name=="mining")then
+		if(mission.name=="mining" or mission.name=="rescue")then -- replace with collisionenabled on object:
 			if(item!=self.object)then
 				if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
 					self.limpet.health-=collision_damage(item,self)
@@ -616,7 +643,7 @@ function states.play:make_explosion(point,xv,yv)
 	xv=xv or 0
 	yv=yv or 0
 	for i=1,8 do
-		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20})
+		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20,kind=point.material})
 	end
 end
 
