@@ -576,15 +576,17 @@ function states.play:update()
 			end
 		end
 		-- crashes
-		if(item!=self.object)then
-			if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
-				self.limpet.health-=collision_damage(item,self)
-				if(self.limpet.health<0)then
-					self:do_death()
+		if(mission.name=="mining")then
+			if(item!=self.object)then
+				if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
+					self.limpet.health-=collision_damage(item,self)
+					if(self.limpet.health<0)then
+						self:do_death()
+					end
+					sfx(9)
+					self:make_explosion(item,item.vx,item.vy)
+					del(self.objects,item)
 				end
-				sfx(9)
-				self:make_explosion(item,item.vx,item.vy)
-				del(self.objects,item)
 			end
 		end
 	end
