@@ -85,6 +85,7 @@ function states.splash:init_activities_missions()
 					palt()
 				end
 
+				camera(state.foffx,state.foffy)
 				-- mining laser
 				if(state:laser_on()) then
 					local lcolor = 2
@@ -93,6 +94,7 @@ function states.splash:init_activities_missions()
 					end
 					line(state.lorigx,state.lorigy,state.laserx,state.lasery,lcolor)
 				end
+				camera()
 			end,
 			draw_hud=function(state)
 				-- laser indicator
@@ -283,9 +285,9 @@ function states.splash:init_activities_missions()
 			check_fail=function(state)
 			end
 	}
-	add(activities,activity.rescue)
 	add(activities,activity.piracy)
 	add(activities,activity.mining)
+	add(activities,activity.rescue)
 	add(activities,activity.fuelratting)
 	add(activities,activity.collection)
 end
@@ -358,7 +360,7 @@ function states.play:init()
 	self.tshldy=-32
 	self.tshldr=50
 	self.lorigx = 40
-	self.lorigy = 115
+	self.lorigy = 113
 	self.laser=0
 	self.laserx=0
 	self.lasery=0
