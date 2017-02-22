@@ -111,6 +111,8 @@ function states.splash:init_activities_missions()
 			end,
 			envt_damage=function(state)
 				do_laser_check(state)
+			end,
+			check_fail=function(state)
 			end
 			}
 	activity.collection={
@@ -132,6 +134,8 @@ function states.splash:init_activities_missions()
 			envt_update=function(state)
 			end,
 			envt_damage=function(state)
+			end,
+			check_fail=function(state)
 			end
 	}
 	activity.rescue={
@@ -166,6 +170,9 @@ function states.splash:init_activities_missions()
 			end,
 			envt_damage=function(state)
 				do_laser_check(state)
+			end,
+			check_fail=function(state)
+				return not state:critical_objects_present()
 			end
 	}
 	activity.fuelratting={
@@ -187,6 +194,8 @@ function states.splash:init_activities_missions()
 			envt_update=function(state)
 			end,
 			envt_damage=function(state)
+			end,
+			check_fail=function(state)
 			end
 	}
 	activity.piracy={
@@ -264,6 +273,8 @@ function states.splash:init_activities_missions()
 			end,
 			envt_damage=function(state)
 				do_laser_check(state)
+			end,
+			check_fail=function(state)
 			end
 	}
 	add(activities,activity.rescue)
@@ -734,6 +745,11 @@ function states.play:update()
 		end
 	end
 
+	if(activity[mission.name].check_fail(self))then
+		self.limpet.health=0
+		self:do_death()
+	end
+
 	for p in all(self.particles) do
 		p.x += p.xv
 		p.y += p.yv
@@ -742,6 +758,26 @@ function states.play:update()
 	end
 	age_transients(self.burn_decals)
 	age_transients(self.particles)
+end
+
+function states.play:critical_objects_present()
+	-- this needs to be updated on scoop
+	local criticals_outstanding={}
+	for i in all(mission.required) do
+		for j=1,i.count do
+			add(criticals_outstanding,i.obj)
+		end
+	end
+
+	for i in all(criticals_outstanding)do
+		for j in all(self.objects)do
+			if(j.c==i) then
+				del(criticals_outstanding,i)
+				break;
+			end
+		end
+	end
+	return #criticals_outstanding == 0
 end
 
 function states.play:make_explosion(point,xv,yv)

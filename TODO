@@ -21,7 +21,7 @@ Different mission types
   #Gore particles
   #Add collidable flag on objects
   TTL, damage on rescuees
-  Fail and repeat if too many killed
+  #Fail and repeat if too many killed
   Think of a way to represent spawned but not required objs
      in mission data structure
  Mines
