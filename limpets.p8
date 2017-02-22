@@ -12,6 +12,15 @@ states.briefing={}
 states.play={}
 states.summary={}
 states.gameover={}
+-- all activities
+activity={}
+activity.mining={}
+activity.collection={}
+activity.rescue={}
+activity.piracy={}
+activity.fuelratting={}
+-- legacy
+activities={}
 --hack
 --global event timer
 objtimer=0
@@ -51,13 +60,56 @@ end
 
 function states.splash:init_activities_missions()
 	mission_number=0 -- starts with 0
-	activities={}
-	local mining={
+	activity.mining={
 			name="mining",
 			verb="mine",
 			scooprect={60,103,68,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
-			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}}}
+			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}},
+			draw_bg=function(state)
+				-- asteroid
+				circfill(64,-64,80,5)
+				for i in all(state.burn_decals) do
+					palt(0,false)
+					palt(5,true)
+					spr(24,i.x,i.y)
+					palt()
+				end
+
+				-- mining laser
+				if(state:laser_on()) then
+					local lcolor = 2
+					if(flr(objtimer)%2==0)then
+						lcolor = 14
+					end
+					line(state.lorigx,state.lorigy,state.laserx,state.lasery,lcolor)
+				end
+			end,
+			draw_hud=function(state)
+				-- laser indicator
+				if (state.laser>0)then
+					line(state.lorigx,126,state.lorigx,117+(state.laser/(state.laserson*30))*10,12)
+				else
+					line(state.lorigx,126,state.lorigx,117-(state.laser/(state.lasersoff*30))*10,2)
+				end
+			end,
+			spawn_objects=function(state)
+				if(state:laser_on())then
+					if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
+						obj = state:spawn_object(state.laserx,state.lasery,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
+						add(state.burn_decals,{x=state.laserx-4,y=state.lasery-4,ttl=15})
+						state:make_explosion(obj,obj.vx,obj.vy)
+						sfx(7)
+					end
+				end
+			end,
+			envt_update=function(state)
+				update_laser(state)
+			end,
+			envt_damage=function(state)
+				do_laser_check(state)
+			end
+			}
 	local collection={
 			name="collection",
 			verb="collect",
@@ -81,9 +133,13 @@ function states.splash:init_activities_missions()
 			verb="pirate",
 			scooprect={60,103,68,111},
 			objects={26},
-			missions={{{26,1}},{{26,2}},{{26,3}}}}
+			missions={{{26,1}},{{26,2}},{{26,3}}},
+			envt_update=function(state)
+				update_laser(state)
+			end
+	}
+	add(activities,activity.mining)
 	add(activities,piracy)
-	add(activities,mining)
 	add(activities,fuelratting)
 	add(activities,collection)
 	add(activities,rescue)
@@ -236,28 +292,8 @@ function states.play:draw()
 	local star=self.stars[i]
 		line(star.x,star.y,star.x,star.y,(objtimer*i%2==0) and 12 or 1)
 	end
-
-	if(mission.name=="mining")then
-		-- asteroid
-		circfill(64,-64,80,5)
-		for i in all(self.burn_decals) do
-			palt(0,false)
-			palt(5,true)
-			spr(24,i.x,i.y)
-			palt()
-		end
-	end
-
-	if(mission.name=="mining")then
-		-- mining laser
-		if(self:laser_on()) then
-			local lcolor = 2
-			if(flr(objtimer)%2==0)then
-				lcolor = 14
-			end
-			line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
-		end
-	end
+ -- here goes nothing
+	activity[mission.name].draw_bg(self)
 
 	if(mission.name=="piracy")then
 		local lcolor=9
@@ -426,14 +462,7 @@ function states.play:draw()
 	local hpercent=self.limpet.health/100
 	rect(126,126,127,127-hpercent*127,hpercent > 0.8 and 3 or (hpercent>0.5 and 11 or (hpercent>0.2 and 9 or 8)))
 
-	if(mission.name=="mining")then
-		-- laser indicator
-		if (self.laser>0)then
-			line(self.lorigx,126,self.lorigx,117+(self.laser/(self.laserson*30))*10,12)
-		else
-			line(self.lorigx,126,self.lorigx,117-(self.laser/(self.lasersoff*30))*10,2)
-		end
-	end
+	activity[mission.name].draw_hud(self)
 
 	-- required items
 	self:draw_shopping_list()
@@ -590,53 +619,17 @@ function states.play:update()
 	objtimer+=1
 
 	if(mission.name=="mining" or mission.name=="piracy")then
-		-- move laser aim
-		self.laserx=64+sin((objtimer%100)/100)*20
-		self.lasery=8+cos((objtimer%100)/100)*5
+		activity[mission.name].spawn_objects(self)
 
-		-- update laser state
-		self.laser = objtimer % ((self.laserson+self.lasersoff)*30) - self.lasersoff*30
-		if(self.laser>0)then
-			sfx(8,2)
-		else
-			sfx(-1,2)
-		end
+		activity[mission.name].envt_update(self)
 
-		-- spawn rocks
+		activity[mission.name].envt_damage(self)
+
 		if(self:laser_on())then
-			if(mission.name=="mining")then
-				if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-					obj = self:spawn_object(self.laserx,self.lasery,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
-					add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
-					self:make_explosion(obj,obj.vx,obj.vy)
-					sfx(7)
-				end
-			end
-		else
 			if(mission.name=="piracy")then
+				do_laser_check(self)
 				if(objtimer % 30 == 0)then
 					obj = self:spawn_object(64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
-				end
-			end
-
-			-- laser burn trace
-			if(objtimer % 2 == 0)then
-				add(self.particles,{x=self.laserx,y=self.lasery,xv=0,yv=0,ttl=10})
-			end
-
-			-- has laser hit limpet?
-			local hit
-			local hx
-			local hy
-			hit,hx,hy=self:laser_hit()
-			if(hit)then
-				-- only do laser damage on every 3rd update
-				if(objtimer % 3 == 0)then
-					self:make_explosion({x=hx,y=hy},0,0)
-					self.limpet.health-=self:laser_damage()
-					if(self.limpet.health<0)then
-						self:do_death()
-					end
 				end
 			end
 		end
@@ -1054,6 +1047,24 @@ function distance(x1,y1,x2,y2)
 	return mysqrt(x*x+y*y)
 end
 
+function do_laser_check(state)
+	-- has laser hit limpet?
+	local hit
+	local hx
+	local hy
+	hit,hx,hy=state:laser_hit()
+	if(hit)then
+		-- only do laser damage on every 3rd update
+		if(objtimer % 3 == 0)then
+			state:make_explosion({x=hx,y=hy},0,0)
+			state.limpet.health-=state:laser_damage()
+			if(state.limpet.health<0)then
+				state:do_death()
+			end
+		end
+	end
+end
+
 function draw_limpets_status(yorig,score,active)
 	yorig=yorig or 0
 	score=score or false
@@ -1183,6 +1194,25 @@ function populate_limpets()
 		del(limpet_colors,colorscheme)
 		add(limpet_colors,colorscheme)
 		del(names,names[1])
+	end
+end
+
+function update_laser(state)
+	-- move laser aim
+	state.laserx=64+sin((objtimer%100)/100)*20
+	state.lasery=8+cos((objtimer%100)/100)*5
+
+	-- update laser state
+	state.laser = objtimer % ((state.laserson+state.lasersoff)*30) - state.lasersoff*30
+	if(state.laser>0)then
+		sfx(8,2)
+	else
+		sfx(-1,2)
+	end
+
+	-- laser burn trace
+	if(state.laser>0 and objtimer % 2 == 0)then
+		add(state.particles,{x=state.laserx,y=state.lasery,xv=0,yv=0,ttl=10})
 	end
 end
 
