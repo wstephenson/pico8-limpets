@@ -49,9 +49,11 @@ Different mission types
   Threat is from fireballs
   Recipient Flyaway
 #Splash screen
- Fluff
+# Fluff
+ Logo?
 #Gameover screen
- Fluff
+# Fluff
+ Rows of dead limpets
 Sounds
  Obj held chirp, faster when in scooprect (blink also faster)
  Laser warm up

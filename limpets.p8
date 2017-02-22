@@ -42,16 +42,22 @@ end
 
 function states.splash:draw()
 	cls()
-	print("limpet control",0,0,7)
-	print("retrieve space junk",4,12,7)
-	print("drop it when the bay is green",4,18,7)
-	print("avoid the laser",4,24,7)
+	local pc=9
+	rect(4,4,123,123,pc)
+	camera(-8,-8)
+	print("limpet control",0,0,pc)
+	print("--------------",0,6,pc)
+	print("retrieve space junk",4,12,pc)
+	print("drop it when bay is green",4,18,pc)
+	print("avoid laser",4,24,pc)
 
-	print("‹‘”ƒ to control thrust",4,36,7)
-	print("hold —(z key) to grab",4,42,7)
+	print("‹‘”ƒ to control thrust",4,36,pc)
+	print("hold — (z key) to grab",4,42,pc)
 
-	print("get correct item to refuel",4,54,7)
-	print("complete mission to restock",4,66,7)
+	print("get correct item to refuel",4,54,pc)
+	print("complete mission to restock",4,66,pc)
+	print("(c)	3303 sYNpLEASURE ents.",4,104,pc)
+	camera()
 end
 
 function states.splash:update()
@@ -292,8 +298,12 @@ end
 
 function states.briefing:draw()
 	cls()
+	local pc=9
+	rect(4,4,123,123,pc)
+	camera(-8,-8)
 	local h=draw_limpets_status(0,false,current_limpet)
 	draw_mission_status(h+6)
+	camera()
 end
 
 function states.briefing:update()
@@ -916,10 +926,14 @@ end
 
 function states.summary:draw()
 	cls()
+	local pc=9
+	rect(4,4,123,123,pc)
+	camera(-8,-8)
 	local not_in_mission=(mission.complete or self:they_are_all_dead())
 	local h=draw_limpets_status(0,true,(not_in_mission and 0 or current_limpet))
 	h=draw_mission_status(h+6,not_in_mission)
 	draw_rip_status(h,states.play.dead_this_mission)
+	camera()
 end
 
 function states.summary:update()
@@ -956,8 +970,12 @@ end
 
 function states.gameover:draw()
 	cls()
-	print("game over :(",0,0,7)
+	local pc=9
+	rect(4,4,123,123,pc)
+	camera(-8,-8)
+	print("/ame over :(",0,0,9)
 	draw_rip_status(12,dead_this_game)
+	camera()
 end
 
 function states.gameover:update()
@@ -1127,7 +1145,8 @@ function draw_limpets_status(yorig,score,active)
 	yorig=yorig or 0
 	score=score or false
 	active=active or 0
-	print("your limpets"..(active>0 and " (ƒ cycle)" or ""),0,yorig,7)
+	local pc=9
+	print("your limpets"..(active>0 and " (ƒ cycle)" or ""),0,yorig,pc)
 	yorig+=6
 	for i=1,#limpets do
 		local limpet = limpets[i]
@@ -1151,7 +1170,8 @@ end
 function draw_mission_status(yorig, retro)
 	yorig=yorig or 0
 	retro=retro or false
-	print("your "..((mission_number==0 or retro) and "" or "next ").."mission "..(retro and "was " or "is ").."to "..mission.verb,0,yorig,7)
+	local pc=9
+	print("your "..((mission_number==0 or retro) and "" or "next ").."mission "..(retro and "was " or "is ").."to "..mission.verb,0,yorig,pc)
 	yorig+=6
 	for j=1,#mission.required do
 		local requirement=mission.required[j]
@@ -1163,7 +1183,7 @@ function draw_mission_status(yorig, retro)
 	end
 	if(mission.complete)then
 		yorig+=6
-		print("well done!!!",0,yorig,10)
+		print("well done!!!",0,yorig,pc)
 		yorig+=6
 	end
 	return yorig
@@ -1173,9 +1193,9 @@ function draw_rip_status(yorig,dead_list)
 	yorig=yorig or 0
 	if(#dead_list>0)then
 		yorig+=6
-		print("rip ",0,yorig,7)
+		print("rip ",0,yorig,9)
 		for i=1,#dead_list do
-			print(dead_list[i],16+(i-1)*4*6,yorig,5)
+			print(dead_list[i],16+(i-1)*4*6,yorig,4)
 		end
 		yorig+=6
 	end
