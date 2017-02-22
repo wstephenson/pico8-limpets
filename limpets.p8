@@ -690,6 +690,11 @@ function states.play:update()
 		end
 	end
 
+ -- PDT
+ if(mission.name=="piracy")then
+  -- firing solution goes here
+ end
+
 	-- collision detection
 	for item in all(self.objects) do
 		-- is it within the grab area
@@ -937,6 +942,19 @@ end
 
 function clamp(val,minv,maxv)
 	return max(minv,min(val,maxv))
+end
+
+function mysqrt(x)
+	if x <= 0 then return 0 end
+	local r = sqrt(x)
+	if r < 0 then return 32768 end
+	return r
+end
+
+function distance(x1,y1,x2,y2)
+	local x=x1-x2
+	local y=y1-y2
+	return mysqrt(x*x+y*y)
 end
 
 function draw_limpets_status(yorig,score,active)
