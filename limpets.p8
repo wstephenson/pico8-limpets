@@ -55,7 +55,7 @@ function states.splash:init_activities_missions()
 	local mining={
 			name="mining",
 			verb="mine",
-			scooprect={60,103,68,111}, -- AABB rect coords
+			scooprect={60,103,68,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
 			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}}}
 	local collection={
@@ -76,9 +76,16 @@ function states.splash:init_activities_missions()
 			scooprect={60,16,68,24},
 			objects={35},
 			missions={{{35,1}},{{35,2}},{{35,3}}}}
+	local piracy={
+			name="piracy",
+			verb="pirate",
+			scooprect={60,103,68,111},
+			objects={26},
+			missions={{{26,1}},{{26,2}},{{26,3}}}}
+	add(activities,piracy)
+	add(activities,mining)
 	add(activities,fuelratting)
 	add(activities,collection)
-	add(activities,mining)
 	add(activities,rescue)
 end
 
@@ -139,6 +146,9 @@ function states.play:init()
 	self.shldx=64
 	self.shldy=160
 	self.shldr=64
+	self.tshldx=64
+	self.tshldy=-32
+	self.tshldr=50
 	self.lorigx = 40
 	self.lorigy = 115
 	self.laser=0
@@ -217,6 +227,9 @@ end
 
 function states.play:draw()
 	cls()
+	-- frame offset for motion effect
+	local foffx=rnd(2)
+	local foffy=rnd(2)
 	-- background
 	-- stars
 	for i=1,#self.stars do
@@ -233,7 +246,9 @@ function states.play:draw()
 			spr(24,i.x,i.y)
 			palt()
 		end
+	end
 
+	if(mission.name=="mining")then
 		-- mining laser
 		if(self:laser_on()) then
 			local lcolor = 2
@@ -241,6 +256,22 @@ function states.play:draw()
 				lcolor = 14
 			end
 			line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
+		end
+	end
+
+	if(mission.name=="piracy")then
+		local lcolor=9
+		if(self:laser_on()) then
+			if(objtimer%20<10)then
+				line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
+			end
+			-- target shield
+			local shield_color=(objtimer%2==0 and 12 or 1)
+			if(self.tshldf)then
+				shield_color=12
+				self.tshldf=false
+			end
+			circ(self.tshldx,self.tshldy,self.tshldr,shield_color)
 		end
 	end
 
@@ -255,6 +286,14 @@ function states.play:draw()
 	end
 	if(mission.name=="fuelratting")then
 		map(8,0,32,0,8,2)
+	end
+	if(mission.name=="piracy")then
+		camera(foffx,foffy)
+		map(8,0,32,0,8,2)
+		if(objtimer%2==0)then -- thrust of both ships
+		 map(0,2,92,-4,2,1)
+			map(0,2,96,120,2,1)
+		end
 	end
 	-- ship hull
 	map(0,0,32,112,8,2)
@@ -290,6 +329,10 @@ function states.play:draw()
 
 	-- ship shield
 	circ(self.shldx, self.shldy, self.shldr, shield_color)
+	-- reset camera
+	if(mission.name=="piracy")then
+		camera()
+	end
 
 	-- foreground objects
 	-- drone
@@ -378,7 +421,7 @@ function states.play:draw()
 		line(p.x,p.y,p.x-p.xv,p.y-p.yv,pcolor)
 	end
 
-	-- HUD
+	-- hud
  -- health
 	local hpercent=self.limpet.health/100
 	rect(126,126,127,127-hpercent*127,hpercent > 0.8 and 3 or (hpercent>0.5 and 11 or (hpercent>0.2 and 9 or 8)))
@@ -424,6 +467,13 @@ function states.play:update()
 	local y = self.y
 	local grabbed = self.grabbed
 
+ -- scroll bg stars when in motion
+	if(mission.name=="piracy")then
+		for star in all(self.stars) do
+			star.x+=0.4
+			if(star.x>127)then star.x-=127 end
+		end
+	end
 
 	-- controls
 	self.txpos=false
@@ -539,8 +589,8 @@ function states.play:update()
 	-- update event timer
 	objtimer+=1
 
-	if(mission.name=="mining")then
-		-- move mining laser aim
+	if(mission.name=="mining" or mission.name=="piracy")then
+		-- move laser aim
 		self.laserx=64+sin((objtimer%100)/100)*20
 		self.lasery=8+cos((objtimer%100)/100)*5
 
@@ -551,20 +601,22 @@ function states.play:update()
 		else
 			sfx(-1,2)
 		end
+
 		-- spawn rocks
 		if(self:laser_on())then
-			if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-				local newobj={}
-				newobj.x=self.laserx
-				newobj.y=self.lasery
-				newobj.vx=rnd(1)-0.5
-				newobj.vy=rnd(1)+0.2
-				newobj.c=mission.objects[flr(rnd(#mission.objects))+1]
-				newobj.ttl=30*8
-				add(self.objects,newobj)
-				add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
-				self:make_explosion(newobj,newobj.vx,newobj.vy)
-				sfx(7)
+			if(mission.name=="mining")then
+				if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
+					obj = self:spawn_object(self.laserx,self.lasery,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
+					add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
+					self:make_explosion(obj,obj.vx,obj.vy)
+					sfx(7)
+				end
+			end
+		else
+			if(mission.name=="piracy")then
+				if(objtimer % 30 == 0)then
+					obj = self:spawn_object(64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
+				end
 			end
 
 			-- laser burn trace
@@ -601,6 +653,10 @@ function states.play:update()
 
 	-- move objects
 	for item in all(self.objects) do
+		-- piracy: ships in motion
+		if(mission.name=="piracy")then
+			item.x+=0.4
+		end
 		item.x += item.vx
 		item.y += item.vy
 		item.vx-=item.vx/(rnd(25)+75)
@@ -609,11 +665,11 @@ function states.play:update()
 			item.ttl-=1
 		end
 		local dead=false
-		if(self:hit_shield(item) and item!=self.object) then
+		if(self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object) then
 			self.shldf=true
 			dead=true
 		end
-		if(item.y>128 or item.ttl==0)then
+		if(item.x>128 or item.y>128 or item.ttl==0)then
 			dead=true
 		end
 		if(dead)then
@@ -645,6 +701,29 @@ function states.play:update()
 			self.object=nil
 		end
 	end
+
+	-- pdt and target shield effects
+	if(mission.name=="piracy" and self.limpet.health>0)then
+		self.pdt = objtimer % ((self.laserson/2+self.lasersoff*2)*30) - self.lasersoff*2*30
+		if(objtimer%3==0)then
+			if(self.pdt>0 and distance(self.x,self.y,80,6)<40)then
+				sol=intercept({x=80,y=6},self,2)
+				if(sol)then
+					vx,vy=aimpoint_to_v_comps({x=80,y=6},sol,2)
+					--bang
+					self:spawn_object(80,6,vx,vy,41,60)
+				end
+			end
+			if(self:hit_shield(self.tshldx,self.tshldy,self.tshldr,self)) then
+				self.tshldf=true
+				self:make_explosion(self,0,0)
+				self.limpet.health-=self:laser_damage()
+				if(self.limpet.health<0)then
+					self:do_death()
+				end
+			end
+		end
+ end
 
 	-- collision detection
 	for item in all(self.objects) do
@@ -746,10 +825,10 @@ function states.play:do_drone_score(item)
 	end
 end
 
-function states.play:hit_shield(item)
-	local i_off_x=item.x-self.shldx
-	local i_off_y=item.y-self.shldy
-	return((i_off_x*i_off_x + i_off_y*i_off_y) < (self.shldr * self.shldr))
+function states.play:hit_shield(sx,sy,sr,item)
+	local i_off_x=item.x-sx
+	local i_off_y=item.y-sy
+	return((i_off_x*i_off_x + i_off_y*i_off_y) < (sr * sr))
 end
 
 function states.play:in_scoop()
@@ -780,6 +859,18 @@ end
 
 function states.play:laser_on()
 	return self.laser > 0 and self.limpet.health > 0
+end
+
+function states.play:spawn_object(x,y,vx,vy,c,ttl)
+	local newobj={}
+	newobj.x=x
+	newobj.y=y
+	newobj.vx=vx
+	newobj.vy=vy
+	newobj.c=c
+	newobj.ttl=ttl
+	add(self.objects,newobj)
+	return newobj
 end
 
 -- 3 way switch: play(next life), briefing(new mission), gameover
@@ -881,6 +972,86 @@ end
 
 function clamp(val,minv,maxv)
 	return max(minv,min(val,maxv))
+end
+
+function aimpoint_to_v_comps(src,aim,pv)
+	local dy = aim[2]-src.y
+	local dx = aim[1]-src.x
+	local a=atan2(dx,dy)
+	local shotvx=pv*cos(a)
+	local shotvy=pv*sin(a)
+	return shotvx,shotvy
+end
+
+function intercept(src,dst,v)
+	local tx=(dst.x-src.x)/4
+	local ty=(dst.y-src.y)/4
+	local tvx=dst.vx/4
+	local tvy=dst.vy/4
+	local v = v/4
+
+	-- get quadratic components
+	local a = tvx*tvx + tvy*tvy - v*v
+	local b = 2*(tvx*tx+tvy*ty)
+	local c = tx*tx + ty*ty
+	assert( c>0)
+
+	-- solve quadratic
+ local ts = quad(a,b,c)
+
+ -- find smallest positive solution
+	local sol = nil
+	if(ts != nil)then
+		local t0=ts[1]
+		local t1=ts[2]
+		printh("t0: "..t0..",t1: "..t1)
+		local t=min(t0,t1)
+		if(t<0)then
+			t=max(t0,t1)
+		end
+		if(t>0)then
+			sol={(dst.x+dst.vx*t),(dst.y+dst.vy*t)}
+		end
+	end
+	return sol
+end
+
+function quad(a,b,c)
+	local sol=nil
+	if(abs(a)<0.00001)then
+		if(abs(b)<0.00001)then
+			if (abs(c)<0.00001) then
+				printh("a,b,c are zero")
+				sol={0,0}
+			end
+		else
+			sol={-c/b,-c/b}
+		end
+	else
+		local disc = b*b-4*a*c
+		if(disc>=0)then
+			disc=mysqrt(disc)
+			assert(disc!=32768)
+			a=2*a
+			sol={(-b-disc)/a,(-b+disc)/a}
+		else
+			printh("disc is negative")
+		end
+	end
+	return sol
+end
+
+function mysqrt(x)
+	if x <= 0 then return 0 end
+	local r = sqrt(x)
+	if r < 0 then return 32768 end
+	return r
+end
+
+function distance(x1,y1,x2,y2)
+	local x=x1-x2
+	local y=y1-y2
+	return mysqrt(x*x+y*y)
 end
 
 function draw_limpets_status(yorig,score,active)
@@ -1047,7 +1218,7 @@ ddd0dd5ddd0ddd5ddddd0d5d000000000c100000000001c00000000000000000000000000cc10000
 0000000000000000ccc0000000333300000000000000000000000c0000c00000000000c000000000000000000000000000000000000000000000000000000000
 0000000000ccc000ccc000000ab000b0000c0c0000c0000000000c00000c0000000c0c0c00000000000000000000000000000000000000000000000000000000
 000677000cc0cc00ccc000003b303333000cc0c00c0c0c0000c0c00ccc0c00000000ccc000000000000000000000000000000000000000000000000000000000
-0066666000c0c0000c0000003b300353000ccc0000ccc000000cccc000ccccc000cccccc00000000000000000000000000000000000000000000000000000000
+0066666000c0c0000c0000003b300353000ccc0000ccc000000cccc000ccccc000cccccc000b0000000000000000000000000000000000000000000000000000
 0066666000ccc000c0c00000033035300cccc0000ccccc0000ccc000000ccc000c00c00000000000000000000000000000000000000000000000000000000000
 000566000c0c0c000000000000333300c00c0c000000c0cc0c0cc00000c0c0c0000c000000000000000000000000000000000000000000000000000000000000
 000000000c0c0c00000000000000000000c000000000c00000c0c00000000c00000c000000000000000000000000000000000000000000000000000000000000
@@ -1084,14 +1255,14 @@ ddd0dd5ddd0ddd5ddddd0d5d000000000c100000000001c00000000000000000000000000cc10000
 000002c20eeee020eeeee088880eeeeeeeeeee088880eeeeee000222e02000000000000000000000000000000000000000000000000000000000000000000000
 000000222000e020eeeeee0000eeeeeeeeeeeee0000eeee00022200e020000000000000000000000000000000000000000000000000000000000000000000000
 00000000022200200000000000000000000000000000000222000ee0200000000000000000000000000000000000000000000000000000000000000000000000
-0000000000222222222222222222222222222222222222200eeee022000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000022000000000000000000000222222222002220000200000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000000022eeeeeeeeeeeeeeeeee2000000000000002222000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000002222222222222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000c100000222222222222222222222222222222222222200eeee022000000000000000000000000000000000000000000000000000000000000000000000000
+00cc1c10000022000000000000000000000222222222002220000200000000000000000000000000000000000000000000000000000000000000000000000000
+0c7ccc1000000022eeeeeeeeeeeeeeeeee2000000000000002222000000000000000000000000000000000000000000000000000000000000000000000000000
+077777cc000000002222222222222222220000000000000000000000cc1110000000000000000000000000000000000000000000000000000000000000000000
+077777cc000000000000000000000000000000000000000000000000cc1110000000000000000000000000000000000000000000000000000000000000000000
+0c7ccc10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00cc1c10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000c1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -1162,8 +1333,8 @@ __gff__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 4041424344454647606162636465666700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-5051525354555657707172737475767700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+50515253545556573f7172737475763f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+7077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
