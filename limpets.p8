@@ -63,6 +63,7 @@ function states.splash:init_activities_missions()
 	activity.mining={
 			name="mining",
 			verb="mine",
+			material=0,
 			scooprect={60,103,68,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
 			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}},
@@ -98,7 +99,7 @@ function states.splash:init_activities_missions()
 			spawn_objects=function(state)
 				if(state:laser_on())then
 					if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-						obj = state:spawn_object(state.laserx,state.lasery,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
+						obj = spawn_object(state,state.laserx,state.lasery,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8,0,true)
 						add(state.burn_decals,{x=state.laserx-4,y=state.lasery-4,ttl=15})
 						state:make_explosion(obj,obj.vx,obj.vy)
 						sfx(7)
@@ -115,6 +116,7 @@ function states.splash:init_activities_missions()
 	activity.collection={
 			name="collection",
 			verb="collect",
+			material=1,
 			scooprect={57,103,71,111},
 			objects={26,27,28,29,30,31},
 			missions={{{26,1}},{{27,2},{28,2}},{{29,3}}},
@@ -135,11 +137,12 @@ function states.splash:init_activities_missions()
 	activity.rescue={
 			name="rescue",
 			verb="rescue",
+			material=2,
 			scooprect={60,103,68,111},
 			objects={36},
 			missions={{{36,1}},{{36,2}},{{36,3}}},
 			init=function(state)
-				init_static_objects(state)
+				init_static_objects(state,true)
 			end,
 			draw_bg=function(state)
 				-- type-6 hull
@@ -168,6 +171,7 @@ function states.splash:init_activities_missions()
 	activity.fuelratting={
 			name="fuelratting",
 			verb="refuel",
+			material=0,
 			scooprect={60,16,68,24},
 			objects={35},
 			missions={{{35,1}},{{35,2}},{{35,3}}},
@@ -188,6 +192,7 @@ function states.splash:init_activities_missions()
 	activity.piracy={
 			name="piracy",
 			verb="pirate",
+			material=1,
 			scooprect={60,103,68,111},
 			objects={26},
 			missions={{{26,1}},{{26,2}},{{26,3}}},
@@ -222,7 +227,7 @@ function states.splash:init_activities_missions()
 			spawn_objects=function(state)
 				if(state:laser_on())then
 					if(objtimer % 30 == 0)then
-						obj = state:spawn_object(64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
+						obj = spawn_object(state,64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8,0,true)
 					end
 				end
 				if(state.limpet.health>0)then
@@ -234,7 +239,7 @@ function states.splash:init_activities_missions()
 							if(sol)then
 								vx,vy=aimpoint_to_v_comps({x=80,y=6},sol,2)
 								--bang
-								state:spawn_object(80,6,vx,vy,41,60)
+								spawn_object(state,80,6,vx,vy,41,60,1,true)
 							end
 						end
 					 -- target shield effects
@@ -261,11 +266,11 @@ function states.splash:init_activities_missions()
 				do_laser_check(state)
 			end
 	}
-	add(activities,activity.fuelratting)
-	add(activities,activity.piracy)
 	add(activities,activity.rescue)
-	add(activities,activity.collection)
+	add(activities,activity.piracy)
 	add(activities,activity.mining)
+	add(activities,activity.fuelratting)
+	add(activities,activity.collection)
 end
 
 function states.briefing:init()
@@ -303,6 +308,7 @@ function states.briefing:init_mission()
 	mission.name=activity.name
 	mission.objects=activity.objects
 	mission.verb=activity.verb
+	mission.material=activity.material
 	mission.scooprect=activity.scooprect
 	mission.required={}
 	mission.complete=false
@@ -481,16 +487,14 @@ function states.play:draw()
 		-- flames
 		if(p.kind==0)then
 			pcolor = p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8)
-			printh('flames '..pcolor)
 		end
 		-- scrap
 		if(p.kind==1)then
 			pcolor = p.ttl > 12 and 7 or (p.ttl > 7 and 6 or 7)
-			printh('scrap '..pcolor)
 		end
 		-- gore
 		if(p.kind==2)then
-			pcolor = p.ttl > 12 and 14 or (p.ttl > 7 and 8 or 2)
+			pcolor = p.ttl > 12 and 8 or (p.ttl > 7 and 2 or 1)
 		end
 		line(p.x,p.y,p.x-p.xv,p.y-p.yv,pcolor)
 	end
@@ -677,8 +681,8 @@ function states.play:update()
 		end
 		if(dead)then
 			sfx(9)
-			del(self.objects,item)
 			self:make_explosion(item,item.vx,-item.vy)
+			del(self.objects,item)
 		end
 	end
 
@@ -717,17 +721,15 @@ function states.play:update()
 			end
 		end
 		-- crashes
-		if(mission.name=="mining" or mission.name=="rescue")then -- replace with collisionenabled on object:
-			if(item!=self.object)then
-				if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
-					self.limpet.health-=collision_damage(item,self)
-					if(self.limpet.health<0)then
-						self:do_death()
-					end
-					sfx(9)
-					self:make_explosion(item,item.vx,item.vy)
-					del(self.objects,item)
+		if(item.collision and item!=self.object)then
+			if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
+				self.limpet.health-=collision_damage(item,self)
+				if(self.limpet.health<0)then
+					self:do_death()
 				end
+				sfx(9)
+				self:make_explosion(item,item.vx,item.vy)
+				del(self.objects,item)
 			end
 		end
 	end
@@ -746,7 +748,7 @@ function states.play:make_explosion(point,xv,yv)
 	xv=xv or 0
 	yv=yv or 0
 	for i=1,8 do
-		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20,kind=point.material or 0})
+		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20,kind=point.material})
 	end
 end
 
@@ -841,16 +843,19 @@ function states.play:laser_on()
 	return self.laser > 0 and self.limpet.health > 0
 end
 
-function states.play:spawn_object(x,y,vx,vy,c,ttl)
-	local newobj={}
-	newobj.x=x
-	newobj.y=y
-	newobj.vx=vx
-	newobj.vy=vy
-	newobj.c=c
-	newobj.ttl=ttl
-	add(self.objects,newobj)
-	return newobj
+function spawn_object(state,x,y,vx,vy,c,ttl,material,collision)
+	printh("collision: "..(collision and "true" or "false").."material: "..material)
+	local obj={}
+	obj.x=x
+	obj.y=y
+	obj.vx=vx
+	obj.vy=vy
+	obj.c=c
+	obj.ttl=ttl
+	obj.material=material
+ obj.collision=collision
+	add(state.objects,obj)
+	return obj
 end
 
 -- 3 way switch: play(next life), briefing(new mission), gameover
@@ -1141,7 +1146,7 @@ function draw_rip_status(yorig,dead_list)
 	return yorig
 end
 
-function init_static_objects(state)
+function init_static_objects(state,collision)
 	-- create array of object types containing required ones
 	local objs={}
 	for i in all(mission.required) do
@@ -1150,17 +1155,8 @@ function init_static_objects(state)
 		end
 	end
 
-	-- particle type for mission
 	for i in all(objs) do
-		local obj={}
-		obj.x=rnd(100)+10
-		obj.y=rnd(80)+20
-		obj.vx=0
-		obj.vy=0
-		obj.c=i
-		obj.ttl=-1
-		obj.material=state.material
-		add(state.objects,obj)
+		spawn_object(states.play,rnd(100+10),rnd(80)+20,0,0,i,-1,mission.material,collision)
 	end
 end
 

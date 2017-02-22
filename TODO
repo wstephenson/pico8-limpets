@@ -7,7 +7,6 @@ FX Flyaway effect once piracy complete
  death animation
 #Ship gfx
  Flip the game
-  No tools exist to flip sprites yet
  More ships for different activities?
  Locate inactive drones better
  Locate drone name and shopping list better
@@ -20,7 +19,7 @@ Physics on objects
 Different mission types
  Rescue
   #Gore particles
-  Add collidable flag on objects
+  #Add collidable flag on objects
   TTL, damage on rescuees
   Fail and repeat if too many killed
   Think of a way to represent spawned but not required objs
@@ -29,14 +28,15 @@ Different mission types
   They explode
   Consider adding as a hazard in other types
  Piracy
-  Cargo collision
+  #Cargo collision
   Cargo sprites
   #Ships are in motion
   #Scrolling background
   #Ship thrust
   #Threat is from point defence
-   PDT damage
+  #PDT damage
    Improve PDT duty cycle
+   Bullets are not Objects
   #Repurposed mining laser targets victim's shields
   #Wait for target shields to drop
   #Cargo spawns from hatch
