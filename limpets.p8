@@ -290,7 +290,10 @@ function states.play:draw()
 	if(mission.name=="piracy")then
 		camera(foffx,foffy)
 		map(8,0,32,0,8,2)
-		map(0,2,104,0,2,1)
+		if(objtimer%2==0)then -- thrust of both ships
+		 map(0,2,92,-4,2,1)
+			map(0,2,96,120,2,1)
+		end
 	end
 	-- ship hull
 	map(0,0,32,112,8,2)
