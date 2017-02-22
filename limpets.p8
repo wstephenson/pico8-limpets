@@ -82,10 +82,10 @@ function states.splash:init_activities_missions()
 			scooprect={60,16,68,24},
 			objects={35},
 			missions={{{35,1}},{{35,2}},{{35,3}}}}
+	add(activities,mining)
 	add(activities,piracy)
 	add(activities,fuelratting)
 	add(activities,collection)
-	add(activities,mining)
 	add(activities,rescue)
 end
 
@@ -243,7 +243,9 @@ function states.play:draw()
 			spr(24,i.x,i.y)
 			palt()
 		end
+	end
 
+	if(mission.name=="mining")then
 		-- mining laser
 		if(self:laser_on()) then
 			local lcolor = 2
@@ -251,6 +253,21 @@ function states.play:draw()
 				lcolor = 14
 			end
 			line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
+		end
+	end
+
+	if(mission.name=="piracy")then
+		local lcolor=9
+		if(self:laser_on()) then
+			if(objtimer%20<10)then
+				line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
+			end
+			-- target shield
+			local shield_color=(objtimer%2==0 and 12 or 1)
+			local shldx=64
+			local shldy=-32
+			local shldr=50
+			circ(shldx, shldy, shldr, shield_color)
 		end
 	end
 
@@ -263,13 +280,16 @@ function states.play:draw()
 		spr(24,76,-2,1,1,true)
 		palt()
 	end
- if(mission.name=="piracy")then
+	if(mission.name=="piracy")then
 		camera(foffx,foffy)
 		map(8,0,32,0,8,2)
 		camera()
 	end
 	if(mission.name=="fuelratting")then
 		map(8,0,32,0,8,2)
+	end
+	if(mission.name=="piracy")then
+		camera(foffx,foffy)
 	end
 	-- ship hull
 	map(0,0,32,112,8,2)
@@ -305,6 +325,10 @@ function states.play:draw()
 
 	-- ship shield
 	circ(self.shldx, self.shldy, self.shldr, shield_color)
+	-- reset camera
+	if(mission.name=="piracy")then
+		camera()
+	end
 
 	-- foreground objects
 	-- drone
@@ -554,8 +578,8 @@ function states.play:update()
 	-- update event timer
 	objtimer+=1
 
-	if(mission.name=="mining")then
-		-- move mining laser aim
+	if(mission.name=="mining" or mission.name=="piracy")then
+		-- move laser aim
 		self.laserx=64+sin((objtimer%100)/100)*20
 		self.lasery=8+cos((objtimer%100)/100)*5
 
@@ -568,18 +592,24 @@ function states.play:update()
 		end
 		-- spawn rocks
 		if(self:laser_on())then
-			if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-				local newobj={}
-				newobj.x=self.laserx
-				newobj.y=self.lasery
-				newobj.vx=rnd(1)-0.5
-				newobj.vy=rnd(1)+0.2
-				newobj.c=mission.objects[flr(rnd(#mission.objects))+1]
-				newobj.ttl=30*8
-				add(self.objects,newobj)
-				add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
-				self:make_explosion(newobj,newobj.vx,newobj.vy)
-				sfx(7)
+			if(mission.name=="mining")then
+				if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
+					local newobj={}
+					newobj.x=self.laserx
+					newobj.y=self.lasery
+					newobj.vx=rnd(1)-0.5
+					newobj.vy=rnd(1)+0.2
+					newobj.c=mission.objects[flr(rnd(#mission.objects))+1]
+					newobj.ttl=30*8
+					add(self.objects,newobj)
+					add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
+					self:make_explosion(newobj,newobj.vx,newobj.vy)
+					sfx(7)
+				end
+			else
+				if(mission.name=="piracy")then
+					-- do shield hits here
+				end
 			end
 
 			-- laser burn trace
