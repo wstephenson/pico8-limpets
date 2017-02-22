@@ -342,7 +342,6 @@ function states.play:draw()
  -- particles
 	for p in all(self.particles) do
 		local pcolor=0
-		printh("p.kind: "..p.kind)
 		-- flames
 		if(p.kind==0)then
 			pcolor = p.ttl > 12 and 10 or (p.ttl > 7 and 9 or 8)
@@ -669,7 +668,7 @@ function states.play:make_explosion(point,xv,yv)
 	xv=xv or 0
 	yv=yv or 0
 	for i=1,8 do
-		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20,kind=point.material})
+		add(self.particles,{x=point.x,y=point.y,xv=xv+rnd(2)-1,yv=yv+rnd(2)-1,ttl=20,kind=point.material or 0})
 	end
 end
 
