@@ -590,11 +590,12 @@ function states.play:update()
 		else
 			sfx(-1,2)
 		end
+
 		-- spawn rocks
 		if(self:laser_on())then
 			if(mission.name=="mining")then
 				if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-					obj,vx,vy = self:spawn_object(self.laserx,self.lasery)
+					obj = self:spawn_object(self.laserx,self.lasery,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
 					add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
 					self:make_explosion(obj,obj.vx,obj.vy)
 					sfx(7)
@@ -603,7 +604,7 @@ function states.play:update()
 		else
 			if(mission.name=="piracy")then
 				if(objtimer % 30 == 0)then
-					obj,vx,vy = self:spawn_object(64,10)
+					obj = self:spawn_object(64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
 				end
 			end
 
@@ -692,7 +693,17 @@ function states.play:update()
 
  -- PDT
  if(mission.name=="piracy")then
-  -- firing solution goes here
+		self.pdt = objtimer % ((self.laserson/2+self.lasersoff*2)*30) - self.lasersoff*2*30
+		if(objtimer%3==0 and self.pdt>0)then
+			if(distance(self.x,self.y,80,6)<40)then
+				sol=intercept({x=80,y=6},self,2)
+				if(sol)then
+					vx,vy=aimpoint_to_v_comps({x=80,y=6},sol,2)
+					--bang
+					self:spawn_object(80,6,vx,vy,41,60)
+				end
+			end
+		end
  end
 
 	-- collision detection
@@ -831,16 +842,16 @@ function states.play:laser_on()
 	return self.laser > 0 and self.limpet.health > 0
 end
 
-function states.play:spawn_object(x,y)
+function states.play:spawn_object(x,y,vx,vy,c,ttl)
 	local newobj={}
 	newobj.x=x
 	newobj.y=y
-	newobj.vx=rnd(1)-0.5
-	newobj.vy=rnd(1)+0.2
-	newobj.c=mission.objects[flr(rnd(#mission.objects))+1]
-	newobj.ttl=30*8
+	newobj.vx=vx
+	newobj.vy=vy
+	newobj.c=c
+	newobj.ttl=ttl
 	add(self.objects,newobj)
-	return newobj,newobj.vx,newobj.vy
+	return newobj
 end
 
 -- 3 way switch: play(next life), briefing(new mission), gameover
@@ -942,6 +953,73 @@ end
 
 function clamp(val,minv,maxv)
 	return max(minv,min(val,maxv))
+end
+
+function aimpoint_to_v_comps(src,aim,pv)
+	local dy = aim[2]-src.y
+	local dx = aim[1]-src.x
+	local a=atan2(dx,dy)
+	local shotvx=pv*cos(a)
+	local shotvy=pv*sin(a)
+	return shotvx,shotvy
+end
+
+function intercept(src,dst,v)
+	local tx=(dst.x-src.x)/4
+	local ty=(dst.y-src.y)/4
+	local tvx=dst.vx/4
+	local tvy=dst.vy/4
+	local v = v/4
+
+	-- get quadratic components
+	local a = tvx*tvx + tvy*tvy - v*v
+	local b = 2*(tvx*tx+tvy*ty)
+	local c = tx*tx + ty*ty
+	assert( c>0)
+
+	-- solve quadratic
+ local ts = quad(a,b,c)
+
+ -- find smallest positive solution
+	local sol = nil
+	if(ts != nil)then
+		local t0=ts[1]
+		local t1=ts[2]
+		printh("t0: "..t0..",t1: "..t1)
+		local t=min(t0,t1)
+		if(t<0)then
+			t=max(t0,t1)
+		end
+		if(t>0)then
+			sol={(dst.x+dst.vx*t),(dst.y+dst.vy*t)}
+		end
+	end
+	return sol
+end
+
+function quad(a,b,c)
+	local sol=nil
+	if(abs(a)<0.00001)then
+		if(abs(b)<0.00001)then
+			if (abs(c)<0.00001) then
+				printh("a,b,c are zero")
+				sol={0,0}
+			end
+		else
+			sol={-c/b,-c/b}
+		end
+	else
+		local disc = b*b-4*a*c
+		if(disc>=0)then
+			disc=mysqrt(disc)
+			assert(disc!=32768)
+			a=2*a
+			sol={(-b-disc)/a,(-b+disc)/a}
+		else
+			printh("disc is negative")
+		end
+	end
+	return sol
 end
 
 function mysqrt(x)
@@ -1121,7 +1199,7 @@ ddd0dd5ddd0ddd5ddddd0d5d000000000c100000000001c00000000000000000000000000cc10000
 0000000000000000ccc0000000333300000000000000000000000c0000c00000000000c000000000000000000000000000000000000000000000000000000000
 0000000000ccc000ccc000000ab000b0000c0c0000c0000000000c00000c0000000c0c0c00000000000000000000000000000000000000000000000000000000
 000677000cc0cc00ccc000003b303333000cc0c00c0c0c0000c0c00ccc0c00000000ccc000000000000000000000000000000000000000000000000000000000
-0066666000c0c0000c0000003b300353000ccc0000ccc000000cccc000ccccc000cccccc00000000000000000000000000000000000000000000000000000000
+0066666000c0c0000c0000003b300353000ccc0000ccc000000cccc000ccccc000cccccc000b0000000000000000000000000000000000000000000000000000
 0066666000ccc000c0c00000033035300cccc0000ccccc0000ccc000000ccc000c00c00000000000000000000000000000000000000000000000000000000000
 000566000c0c0c000000000000333300c00c0c000000c0cc0c0cc00000c0c0c0000c000000000000000000000000000000000000000000000000000000000000
 000000000c0c0c00000000000000000000c000000000c00000c0c00000000c00000c000000000000000000000000000000000000000000000000000000000000

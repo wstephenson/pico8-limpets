@@ -11,6 +11,7 @@ FX Flyaway effect once piracy complete
  More ships for different activities?
  Locate inactive drones better
  Locate drone name and shopping list better
+ Locate laser origin depending on ship and camera motion
 # Make drop zone configurable per activity
 Progression
  Increasing mission difficulty
@@ -29,10 +30,11 @@ Different mission types
   Consider adding as a hazard in other types
  Piracy
   #Ships are in motion
-  Threat is from point defence
+  #Threat is from point defence
   #Repurposed mining laser targets victim's shields
   #Wait for target shields to drop
-  Cargo spawns from hatch
+  #Cargo spawns from hatch
+  Target shield is deadly
  Fuel ratting(reversed game flow)
   Canisters are spawned one by one at own ship
   Recipient has a decreasing fuel gauge
