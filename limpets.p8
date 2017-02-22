@@ -224,6 +224,9 @@ end
 
 function states.play:draw()
 	cls()
+	-- frame offset for motion effect
+	local foffx=rnd(2)
+	local foffy=rnd(2)
 	-- background
 	-- stars
 	for i=1,#self.stars do
@@ -261,7 +264,7 @@ function states.play:draw()
 		palt()
 	end
  if(mission.name=="piracy")then
-		camera(rnd(2),rnd(2))
+		camera(foffx,foffy)
 		map(8,0,32,0,8,2)
 		camera()
 	end
