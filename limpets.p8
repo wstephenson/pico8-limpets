@@ -146,6 +146,9 @@ function states.play:init()
 	self.shldx=64
 	self.shldy=160
 	self.shldr=64
+	self.tshldx=64
+	self.tshldy=-32
+	self.tshldr=50
 	self.lorigx = 40
 	self.lorigy = 115
 	self.laser=0
@@ -264,10 +267,11 @@ function states.play:draw()
 			end
 			-- target shield
 			local shield_color=(objtimer%2==0 and 12 or 1)
-			local shldx=64
-			local shldy=-32
-			local shldr=50
-			circ(shldx, shldy, shldr, shield_color)
+			if(self.tshldf)then
+				shield_color=12
+				self.tshldf=false
+			end
+			circ(self.tshldx,self.tshldy,self.tshldr,shield_color)
 		end
 	end
 
@@ -654,7 +658,7 @@ function states.play:update()
 			item.ttl-=1
 		end
 		local dead=false
-		if(self:hit_shield(item) and item!=self.object) then
+		if(self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object) then
 			self.shldf=true
 			dead=true
 		end
@@ -691,16 +695,24 @@ function states.play:update()
 		end
 	end
 
- -- PDT
- if(mission.name=="piracy")then
+	-- PDT and target shield effects
+	if(mission.name=="piracy" and self.limpet.health>0)then
 		self.pdt = objtimer % ((self.laserson/2+self.lasersoff*2)*30) - self.lasersoff*2*30
-		if(objtimer%3==0 and self.pdt>0)then
-			if(distance(self.x,self.y,80,6)<40)then
+		if(objtimer%3==0)then
+			if(self.pdt>0 and distance(self.x,self.y,80,6)<40)then
 				sol=intercept({x=80,y=6},self,2)
 				if(sol)then
 					vx,vy=aimpoint_to_v_comps({x=80,y=6},sol,2)
 					--bang
 					self:spawn_object(80,6,vx,vy,41,60)
+				end
+			end
+			if(self:hit_shield(self.tshldx,self.tshldy,self.tshldr,self)) then
+				self.tshldf=true
+				self:make_explosion(self,0,0)
+				self.limpet.health-=self:laser_damage()
+				if(self.limpet.health<0)then
+					self:do_death()
 				end
 			end
 		end
@@ -806,10 +818,10 @@ function states.play:do_drone_score(item)
 	end
 end
 
-function states.play:hit_shield(item)
-	local i_off_x=item.x-self.shldx
-	local i_off_y=item.y-self.shldy
-	return((i_off_x*i_off_x + i_off_y*i_off_y) < (self.shldr * self.shldr))
+function states.play:hit_shield(sx,sy,sr,item)
+	local i_off_x=item.x-sx
+	local i_off_y=item.y-sy
+	return((i_off_x*i_off_x + i_off_y*i_off_y) < (sr * sr))
 end
 
 function states.play:in_scoop()

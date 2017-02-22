@@ -34,7 +34,7 @@ Different mission types
   #Repurposed mining laser targets victim's shields
   #Wait for target shields to drop
   #Cargo spawns from hatch
-  Target shield is deadly
+  #Target shield is deadly
  Fuel ratting(reversed game flow)
   Canisters are spawned one by one at own ship
   Recipient has a decreasing fuel gauge
