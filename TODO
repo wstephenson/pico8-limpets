@@ -1,14 +1,16 @@
 BUG: game death list layout
 BUG: drone name display in game
+BUG: items spawned inside shields
 FX when scoring
 #Drone death
  death animation
 #Ship gfx
  Flip the game
+  No tools exist to flip sprites yet
  More ships for different activities?
  Locate inactive drones better
  Locate drone name and shopping list better
- Make drop zone configurable per activity
+# Make drop zone configurable per activity
 Progression
  Increasing mission difficulty
  reduced fuel bonus at higher levels?
@@ -37,6 +39,7 @@ Different mission types
 #Gameover screen
  Fluff
 Sounds
+ Obj held chirp, faster when in scooprect (blink also faster)
  Laser warm up
  Laser cool down
 # Thrust

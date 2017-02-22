@@ -55,21 +55,24 @@ function states.splash:init_activities_missions()
 	local mining={
 			name="mining",
 			verb="mine",
+			scooprect={60,103,68,111}, -- AABB rect coords
 			objects={16,17,18,19,20,21},
 			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}}}
 	local collection={
 			name="collection",
 			verb="collect",
+			scooprect={57,103,71,111},
 			objects={26,27,28,29,30,31},
 			missions={{{26,1}},{{27,2},{28,2}},{{29,3}}}}
 	local rescue={
 			name="rescue",
 			verb="rescue",
+			scooprect={60,103,68,111},
 			objects={36},
 			missions={{{36,1}},{{36,2}},{{36,3}}}}
-	add(activities,rescue)
 	add(activities,collection)
 	add(activities,mining)
+	add(activities,rescue)
 end
 
 function states.briefing:init()
@@ -107,6 +110,7 @@ function states.briefing:init_mission()
 	mission.name=activity.name
 	mission.objects=activity.objects
 	mission.verb=activity.verb
+	mission.scooprect=activity.scooprect
 	mission.required={}
 	mission.complete=false
 	printh("mission: "..mission.name..", verb: "..mission.verb)
@@ -246,11 +250,17 @@ function states.play:draw()
 	-- ship hull
 	map(0,0,32,112,8,2)
 	-- drop indicator
-	if(self:in_scoop() and self.object)then
-		rect(54,116,74,126,3)
-		rect(55,116,73,125,11)
+	if((objtimer%15)<7 and self.object)then
+		local sr=mission.scooprect
+		local icolor=9
+		if(self:in_scoop())then
+			icolor=12
+		end
+		line(sr[1],sr[2],sr[1]-1,sr[2]-1,icolor)
+		line(sr[1],sr[4],sr[1]-1,sr[4]+1,icolor)
+		line(sr[3],sr[2],sr[3]+1,sr[2]-1,icolor)
+		line(sr[3],sr[4],sr[3]+1,sr[4]+1,icolor)
 	end
-	rectfill(56,116,72,124,0)
 	for i=1,#limpets do
 		local limpet=limpets[i]
 		-- don't draw active limpet here
@@ -734,7 +744,7 @@ function states.play:hit_shield(item)
 end
 
 function states.play:in_scoop()
-	return (self.x>60 and self.x<68 and self.y>114 and self.y<122)
+	return (self.x>mission.scooprect[1] and self.x<mission.scooprect[3] and self.y>mission.scooprect[2] and self.y<mission.scooprect[4])
 end
 
 function states.play:is_mission_complete(dropped_object)
