@@ -79,11 +79,11 @@ function states.splash:init_activities_missions()
 	local piracy={
 			name="piracy",
 			verb="pirate",
-			scooprect={60,16,68,24},
-			objects={35},
-			missions={{{35,1}},{{35,2}},{{35,3}}}}
-	add(activities,mining)
+			scooprect={60,103,68,111},
+			objects={26},
+			missions={{{26,1}},{{26,2}},{{26,3}}}}
 	add(activities,piracy)
+	add(activities,mining)
 	add(activities,fuelratting)
 	add(activities,collection)
 	add(activities,rescue)
