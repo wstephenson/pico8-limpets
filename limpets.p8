@@ -165,8 +165,8 @@ function states.splash:init_activities_missions()
 				do_laser_check(state)
 			end
 	}
-	local fuelratting={
-			name="refuel",
+	activity.fuelratting={
+			name="fuelratting",
 			verb="refuel",
 			scooprect={60,16,68,24},
 			objects={35},
@@ -174,6 +174,7 @@ function states.splash:init_activities_missions()
 			init=function(state)
 			end,
 			draw_bg=function(state)
+				draw_other_ship()
 			end,
 			draw_hud=function(state)
 			end,
@@ -182,7 +183,6 @@ function states.splash:init_activities_missions()
 			envt_update=function(state)
 			end,
 			envt_damage=function(state)
-				do_laser_check(state)
 			end
 	}
 	activity.piracy={
@@ -208,7 +208,9 @@ function states.splash:init_activities_missions()
 					end
 					circ(state.tshldx,state.tshldy,state.tshldr,shield_color)
 				end
-				map(8,0,32,0,8,2)
+
+				draw_other_ship()
+
 				if(objtimer%2==0)then -- thrust of both ships
 					map(0,2,92,-4,2,1)
 					map(0,2,96,120,2,1)
@@ -259,11 +261,11 @@ function states.splash:init_activities_missions()
 				do_laser_check(state)
 			end
 	}
+	add(activities,activity.fuelratting)
 	add(activities,activity.piracy)
 	add(activities,activity.rescue)
 	add(activities,activity.collection)
 	add(activities,activity.mining)
-	add(activities,fuelratting)
 end
 
 function states.briefing:init()
@@ -390,10 +392,6 @@ function states.play:draw()
 	end
 	-- here goes nothing
 	activity[mission.name].draw_bg(self)
-
-	if(mission.name=="fuelratting")then
-		map(8,0,32,0,8,2)
-	end
 
 	draw_own_ship(self)
 
@@ -1052,6 +1050,10 @@ function do_laser_check(state)
 			end
 		end
 	end
+end
+
+function draw_other_ship()
+	map(8,0,32,0,8,2)
 end
 
 function draw_own_ship(state)
