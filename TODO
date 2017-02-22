@@ -28,11 +28,11 @@ Different mission types
   They explode
   Consider adding as a hazard in other types
  Piracy
-  Ships are in motion
+  #Ships are in motion
   Threat is from point defence
-  Repurposed mining laser targets victim's shields
-  Wait for target shields to drop
-  Attacker flyaway
+  #Repurposed mining laser targets victim's shields
+  #Wait for target shields to drop
+  Cargo spawns from hatch
  Fuel ratting(reversed game flow)
   Canisters are spawned one by one at own ship
   Recipient has a decreasing fuel gauge
