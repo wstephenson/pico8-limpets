@@ -98,11 +98,12 @@ function states.splash:init_activities_missions()
 			end,
 			draw_hud=function(state)
 				-- laser indicator
-				if (state.laser>0)then
-					line(state.lorigx,126,state.lorigx,117+(state.laser/(state.laserson*30))*10,12)
-				else
-					line(state.lorigx,126,state.lorigx,117-(state.laser/(state.lasersoff*30))*10,2)
-				end
+				-- TODO rethink
+				--if (state.laser>0)then
+				--	line(state.lorigx,126,state.lorigx,117+(state.laser/(state.laserson*30))*10,12)
+				--else
+				--	line(state.lorigx,126,state.lorigx,117-(state.laser/(state.lasersoff*30))*10,2)
+				--end
 			end,
 			spawn_objects=function(state)
 				if(state:laser_on())then
@@ -285,8 +286,8 @@ function states.splash:init_activities_missions()
 			check_fail=function(state)
 			end
 	}
-	add(activities,activity.piracy)
 	add(activities,activity.mining)
+	add(activities,activity.piracy)
 	add(activities,activity.rescue)
 	add(activities,activity.fuelratting)
 	add(activities,activity.collection)
