@@ -125,24 +125,41 @@ function states.splash:init_activities_missions()
 			end,
 			draw_hud=function(state)
 			end,
+			spawn_objects=function(state)
+			end,
 			envt_update=function(state)
 			end,
 			envt_damage=function(state)
 			end
 	}
-	local rescue={
+	activity.rescue={
 			name="rescue",
 			verb="rescue",
 			scooprect={60,103,68,111},
 			objects={36},
 			missions={{{36,1}},{{36,2}},{{36,3}}},
 			init=function(state)
+				init_static_objects(state)
 			end,
 			draw_bg=function(state)
+				-- type-6 hull
+				map(8,0,32,0,8,2)
+				palt(0,false)
+				palt(5,true)
+				spr(24,48,0)
+				spr(24,76,-2,1,1,true)
+				palt()
 			end,
 			draw_hud=function(state)
 			end,
+			spawn_objects=function(state)
+			end,
 			envt_update=function(state)
+				--wreck sparks
+				local interval=((5+flr(rnd(3)-1.5))*3)
+				if(objtimer%interval==0)then
+					state:make_explosion({x=rnd(64)+32,y=rnd(16),material=0},0,0)
+				end
 			end,
 			envt_damage=function(state)
 				do_laser_check(state)
@@ -159,6 +176,8 @@ function states.splash:init_activities_missions()
 			draw_bg=function(state)
 			end,
 			draw_hud=function(state)
+			end,
+			spawn_objects=function(state)
 			end,
 			envt_update=function(state)
 			end,
@@ -178,6 +197,8 @@ function states.splash:init_activities_missions()
 			end,
 			draw_hud=function(state)
 			end,
+			spawn_objects=function(state)
+			end,
 			envt_update=function(state)
 				update_laser(state)
 			end,
@@ -185,11 +206,11 @@ function states.splash:init_activities_missions()
 				do_laser_check(state)
 			end
 	}
+	add(activities,activity.rescue)
 	add(activities,activity.collection)
 	add(activities,activity.mining)
 	add(activities,piracy)
 	add(activities,fuelratting)
-	add(activities,rescue)
 end
 
 function states.briefing:init()
@@ -329,15 +350,6 @@ function states.play:draw()
 		end
 	end
 
-	-- type-6 hull
-	if(mission.name=="rescue")then
-		map(8,0,32,0,8,2)
-		palt(0,false)
-		palt(5,true)
-		spr(24,48,0)
-		spr(24,76,-2,1,1,true)
-		palt()
-	end
 	if(mission.name=="fuelratting")then
 		map(8,0,32,0,8,2)
 	end
@@ -636,13 +648,13 @@ function states.play:update()
 	-- update event timer
 	objtimer+=1
 
+	activity[mission.name].spawn_objects(self)
+
+	activity[mission.name].envt_update(self)
+
+	activity[mission.name].envt_damage(self)
+
 	if(mission.name=="mining" or mission.name=="piracy")then
-		activity[mission.name].spawn_objects(self)
-
-		activity[mission.name].envt_update(self)
-
-		activity[mission.name].envt_damage(self)
-
 		if(self:laser_on())then
 			if(mission.name=="piracy")then
 				do_laser_check(self)
@@ -650,15 +662,6 @@ function states.play:update()
 					obj = self:spawn_object(64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
 				end
 			end
-		end
-	end
-
-	if(mission.name=="rescue")then
-		--wreck sparks
-		local interval=((5+flr(rnd(3)-1.5))*3)
-		printh(objtimer..", "..interval)
-		if(objtimer%interval==0)then
-			self:make_explosion({x=rnd(64)+32,y=rnd(16),material=0},0,0)
 		end
 	end
 
