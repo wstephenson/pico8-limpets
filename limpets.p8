@@ -70,6 +70,13 @@ function states.splash:init_activities_missions()
 			scooprect={60,103,68,111},
 			objects={36},
 			missions={{{36,1}},{{36,2}},{{36,3}}}}
+	local fuelratting={
+			name="refuel",
+			verb="refuel",
+			scooprect={60,16,68,24},
+			objects={35},
+			missions={{{35,1}},{{35,2}},{{35,3}}}}
+	add(activities,fuelratting)
 	add(activities,collection)
 	add(activities,mining)
 	add(activities,rescue)
@@ -238,7 +245,7 @@ function states.play:draw()
 	end
 
 	-- type-6 hull
-	if(mission.name=="rescue" or mission.name=="piracy")then
+	if(mission.name=="rescue")then
 		map(8,0,32,0,8,2)
 		palt(0,false)
 		palt(5,true)
@@ -246,7 +253,9 @@ function states.play:draw()
 		spr(24,76,-2,1,1,true)
 		palt()
 	end
-
+	if(mission.name=="fuelratting")then
+		map(8,0,32,0,8,2)
+	end
 	-- ship hull
 	map(0,0,32,112,8,2)
 	-- drop indicator
