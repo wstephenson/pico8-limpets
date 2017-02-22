@@ -36,6 +36,7 @@ Different mission types
   #Ship thrust
   #Threat is from point defence
    PDT damage
+   Improve PDT duty cycle
   #Repurposed mining laser targets victim's shields
   #Wait for target shields to drop
   #Cargo spawns from hatch

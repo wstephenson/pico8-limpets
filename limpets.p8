@@ -185,7 +185,7 @@ function states.splash:init_activities_missions()
 				do_laser_check(state)
 			end
 	}
-	local piracy={
+	activity.piracy={
 			name="piracy",
 			verb="pirate",
 			scooprect={60,103,68,111},
@@ -194,22 +194,75 @@ function states.splash:init_activities_missions()
 			init=function(state)
 			end,
 			draw_bg=function(state)
+				camera(state.foffx,state.foffy)
+				local lcolor=9
+				if(state:laser_on()) then
+					if(objtimer%20<10)then
+						line(state.lorigx,state.lorigy,state.laserx,state.lasery,lcolor)
+					end
+					-- target shield
+					local shield_color=(objtimer%2==0 and 12 or 1)
+					if(state.tshldf)then
+						shield_color=12
+						state.tshldf=false
+					end
+					circ(state.tshldx,state.tshldy,state.tshldr,shield_color)
+				end
+				map(8,0,32,0,8,2)
+				if(objtimer%2==0)then -- thrust of both ships
+					map(0,2,92,-4,2,1)
+					map(0,2,96,120,2,1)
+				end
+				camera()
 			end,
 			draw_hud=function(state)
 			end,
 			spawn_objects=function(state)
+				if(state:laser_on())then
+					if(objtimer % 30 == 0)then
+						obj = state:spawn_object(64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
+					end
+				end
+				if(state.limpet.health>0)then
+					if(objtimer%3==0)then
+						-- fire pdt
+						state.pdt = objtimer % ((state.laserson/2+state.lasersoff*2)*30) - state.lasersoff*2*30
+						if(state.pdt>0 and distance(state.x,state.y,80,6)<40)then
+							sol=intercept({x=80,y=6},state,2)
+							if(sol)then
+								vx,vy=aimpoint_to_v_comps({x=80,y=6},sol,2)
+								--bang
+								state:spawn_object(80,6,vx,vy,41,60)
+							end
+						end
+					 -- target shield effects
+						if(state:hit_shield(state.tshldx,state.tshldy,state.tshldr,state)) then
+							state.tshldf=true
+							state:make_explosion(state,0,0)
+							state.limpet.health-=state:laser_damage()
+							if(state.limpet.health<0)then
+								state:do_death()
+							end
+						end
+					end
+				end
 			end,
 			envt_update=function(state)
 				update_laser(state)
+				-- scroll bg stars when in motion
+				for star in all(state.stars) do
+					star.x+=0.4
+					if(star.x>127)then star.x-=127 end
+				end
 			end,
 			envt_damage=function(state)
 				do_laser_check(state)
 			end
 	}
+	add(activities,activity.piracy)
 	add(activities,activity.rescue)
 	add(activities,activity.collection)
 	add(activities,activity.mining)
-	add(activities,piracy)
 	add(activities,fuelratting)
 end
 
@@ -267,6 +320,8 @@ function states.play:init()
 	self.lindex=current_limpet
 	self.limpet=limpets[self.lindex]
 	self.next_state="briefing"
+	self.foffx=0
+	self.foffy=0
 	self.shldx=64
 	self.shldy=160
 	self.shldr=64
@@ -323,8 +378,10 @@ end
 function states.play:draw()
 	cls()
 	-- frame offset for motion effect
-	local foffx=rnd(2)
-	local foffy=rnd(2)
+	if(mission.name=="piracy")then
+		self.foffx=rnd(2)
+		self.foffy=rnd(2)
+	end
 	-- background
 	-- stars
 	for i=1,#self.stars do
@@ -334,47 +391,12 @@ function states.play:draw()
 	-- here goes nothing
 	activity[mission.name].draw_bg(self)
 
-	if(mission.name=="piracy")then
-		local lcolor=9
-		if(self:laser_on()) then
-			if(objtimer%20<10)then
-				line(self.lorigx,self.lorigy,self.laserx,self.lasery,lcolor)
-			end
-			-- target shield
-			local shield_color=(objtimer%2==0 and 12 or 1)
-			if(self.tshldf)then
-				shield_color=12
-				self.tshldf=false
-			end
-			circ(self.tshldx,self.tshldy,self.tshldr,shield_color)
-		end
-	end
-
 	if(mission.name=="fuelratting")then
 		map(8,0,32,0,8,2)
 	end
-	if(mission.name=="piracy")then
-		camera(foffx,foffy)
-		map(8,0,32,0,8,2)
-		if(objtimer%2==0)then -- thrust of both ships
-		 map(0,2,92,-4,2,1)
-			map(0,2,96,120,2,1)
-		end
-	end
-	-- ship hull
-	map(0,0,32,112,8,2)
-	-- drop indicator
-	if((objtimer%15)<7 and self.object)then
-		local sr=mission.scooprect
-		local icolor=9
-		if(self:in_scoop())then
-			icolor=12
-		end
-		line(sr[1],sr[2],sr[1]-1,sr[2]-1,icolor)
-		line(sr[1],sr[4],sr[1]-1,sr[4]+1,icolor)
-		line(sr[3],sr[2],sr[3]+1,sr[2]-1,icolor)
-		line(sr[3],sr[4],sr[3]+1,sr[4]+1,icolor)
-	end
+
+	draw_own_ship(self)
+
 	for i=1,#limpets do
 		local limpet=limpets[i]
 		-- don't draw active limpet here
@@ -386,18 +408,6 @@ function states.play:draw()
 		spr(spritenum, x, 108)
 		pal()
   ::continue::
-	end
-	local shield_color=1
-	if(self.shldf)then
-		shield_color=12
-		self.shldf=false
-	end
-
-	-- ship shield
-	circ(self.shldx, self.shldy, self.shldr, shield_color)
-	-- reset camera
-	if(mission.name=="piracy")then
-		camera()
 	end
 
 	-- foreground objects
@@ -526,14 +536,6 @@ function states.play:update()
 	local y = self.y
 	local grabbed = self.grabbed
 
- -- scroll bg stars when in motion
-	if(mission.name=="piracy")then
-		for star in all(self.stars) do
-			star.x+=0.4
-			if(star.x>127)then star.x-=127 end
-		end
-	end
-
 	-- controls
 	self.txpos=false
 	self.txneg=false
@@ -654,17 +656,6 @@ function states.play:update()
 
 	activity[mission.name].envt_damage(self)
 
-	if(mission.name=="mining" or mission.name=="piracy")then
-		if(self:laser_on())then
-			if(mission.name=="piracy")then
-				do_laser_check(self)
-				if(objtimer % 30 == 0)then
-					obj = self:spawn_object(64,10,rnd(1)-0.5,rnd(1)+0.2,mission.objects[flr(rnd(#mission.objects))+1],30*8)
-				end
-			end
-		end
-	end
-
 	-- move objects
 	for item in all(self.objects) do
 		-- piracy: ships in motion
@@ -715,29 +706,6 @@ function states.play:update()
 			self.object=nil
 		end
 	end
-
-	-- pdt and target shield effects
-	if(mission.name=="piracy" and self.limpet.health>0)then
-		self.pdt = objtimer % ((self.laserson/2+self.lasersoff*2)*30) - self.lasersoff*2*30
-		if(objtimer%3==0)then
-			if(self.pdt>0 and distance(self.x,self.y,80,6)<40)then
-				sol=intercept({x=80,y=6},self,2)
-				if(sol)then
-					vx,vy=aimpoint_to_v_comps({x=80,y=6},sol,2)
-					--bang
-					self:spawn_object(80,6,vx,vy,41,60)
-				end
-			end
-			if(self:hit_shield(self.tshldx,self.tshldy,self.tshldr,self)) then
-				self.tshldf=true
-				self:make_explosion(self,0,0)
-				self.limpet.health-=self:laser_damage()
-				if(self.limpet.health<0)then
-					self:do_death()
-				end
-			end
-		end
- end
 
 	-- collision detection
 	for item in all(self.objects) do
@@ -1084,6 +1052,32 @@ function do_laser_check(state)
 			end
 		end
 	end
+end
+
+function draw_own_ship(state)
+	camera(state.foffx,state.foffy)
+	-- ship hull
+	map(0,0,32,112,8,2)
+	-- drop indicator
+	if((objtimer%15)<7 and state.object)then
+		local sr=mission.scooprect
+		local icolor=9
+		if(state:in_scoop())then
+			icolor=12
+		end
+		line(sr[1],sr[2],sr[1]-1,sr[2]-1,icolor)
+		line(sr[1],sr[4],sr[1]-1,sr[4]+1,icolor)
+		line(sr[3],sr[2],sr[3]+1,sr[2]-1,icolor)
+		line(sr[3],sr[4],sr[3]+1,sr[4]+1,icolor)
+	end
+	local shield_color=1
+	if(state.shldf)then
+		shield_color=12
+		state.shldf=false
+	end
+	-- ship shield
+	circ(state.shldx, state.shldy, state.shldr, shield_color)
+	camera()
 end
 
 function draw_limpets_status(yorig,score,active)
