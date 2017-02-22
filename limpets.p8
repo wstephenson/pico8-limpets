@@ -594,21 +594,16 @@ function states.play:update()
 		if(self:laser_on())then
 			if(mission.name=="mining")then
 				if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
-					local newobj={}
-					newobj.x=self.laserx
-					newobj.y=self.lasery
-					newobj.vx=rnd(1)-0.5
-					newobj.vy=rnd(1)+0.2
-					newobj.c=mission.objects[flr(rnd(#mission.objects))+1]
-					newobj.ttl=30*8
-					add(self.objects,newobj)
+					obj,vx,vy = self:spawn_object(self.laserx,self.lasery)
 					add(self.burn_decals,{x=self.laserx-4,y=self.lasery-4,ttl=15})
-					self:make_explosion(newobj,newobj.vx,newobj.vy)
+					self:make_explosion(obj,obj.vx,obj.vy)
 					sfx(7)
 				end
-			else
-				if(mission.name=="piracy")then
-					-- do shield hits here
+			end
+		else
+			if(mission.name=="piracy")then
+				if(objtimer % 30 == 0)then
+					obj,vx,vy = self:spawn_object(64,10)
 				end
 			end
 
@@ -646,6 +641,10 @@ function states.play:update()
 
 	-- move objects
 	for item in all(self.objects) do
+		-- piracy: ships in motion
+		if(mission.name=="piracy")then
+			item.x+=0.4
+		end
 		item.x += item.vx
 		item.y += item.vy
 		item.vx-=item.vx/(rnd(25)+75)
@@ -658,7 +657,7 @@ function states.play:update()
 			self.shldf=true
 			dead=true
 		end
-		if(item.y>128 or item.ttl==0)then
+		if(item.x>128 or item.y>128 or item.ttl==0)then
 			dead=true
 		end
 		if(dead)then
@@ -825,6 +824,18 @@ end
 
 function states.play:laser_on()
 	return self.laser > 0 and self.limpet.health > 0
+end
+
+function states.play:spawn_object(x,y)
+	local newobj={}
+	newobj.x=x
+	newobj.y=y
+	newobj.vx=rnd(1)-0.5
+	newobj.vy=rnd(1)+0.2
+	newobj.c=mission.objects[flr(rnd(#mission.objects))+1]
+	newobj.ttl=30*8
+	add(self.objects,newobj)
+	return newobj,newobj.vx,newobj.vy
 end
 
 -- 3 way switch: play(next life), briefing(new mission), gameover
