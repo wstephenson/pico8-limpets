@@ -1,0 +1,88 @@
+BUG: game death list layout
+BUG: drone name display in game
+FX when scoring
+#Drone death
+ death animation
+#Ship gfx
+ Flip the game
+ More ships for different activities?
+ Locate inactive drones better
+ Locate drone name and shopping list better
+ Make drop zone configurable per activity
+Progression
+ Increasing mission difficulty
+ reduced fuel bonus at higher levels?
+Physics on objects
+Different mission types
+ Rescue
+  #Gore particles
+  Add collidable flag on objects
+  TTL, damage on rescuees
+  Fail and repeat if too many killed
+  Think of a way to represent spawned but not required objs
+     in mission data structure
+ Mines
+  They explode
+  Consider adding as a hazard in other types
+ Piracy
+  Threat is from point defence
+  Wait for target shields to drop
+ Fuel ratting(reversed game flow)
+  Canisters are spawned one by one at own ship
+  Recipient has a decreasing fuel gauge
+  Recipient flies off once full
+  Threat is from fireballs
+#Splash screen
+ Fluff
+#Gameover screen
+ Fluff
+Sounds
+ Laser warm up
+ Laser cool down
+# Thrust
+# Grabbed
+# Released
+# Score
+# Laser firing
+# Asteroid released
+# Asteroid collision
+# Asteroid explodes	
+# Low fuel
+Jingles
+ Game over
+# Drone killed
+# Drone activated
+# Mission completed
+#Recolor drone sprites individually
+#Indicate when ok to drop
+# Cargo collection
+# Mining
+#  Laser damage
+#   Intermittent laser
+#  Laser status indicator
+#   Variety of mining missions
+#  Disable laser when dead
+#Names
+#Update tx/ty independently of inputs
+#BUG: thrust stays on when dead
+#BUG: drone name list resets on new game
+#Asteroid drag
+#Asteroid ttl
+#Drone score
+#Lives
+#Swapping drones
+#Target score
+#Shopping list
+XTime limit?
+
+
+Dead drone rescue?
+
+Name: 
+A Drone's Life
+My Little Limpet
+Drone Control
+Limpet Control
+Are Friends A-Limpet?
+Cmdr's Best Friend
+Life of a Limpet
