@@ -253,6 +253,11 @@ function states.play:draw()
 		spr(24,76,-2,1,1,true)
 		palt()
 	end
+ if(mission.name=="piracy")then
+		camera(rnd(2),rnd(2))
+		map(8,0,32,0,8,2)
+		camera()
+	end
 	if(mission.name=="fuelratting")then
 		map(8,0,32,0,8,2)
 	end
