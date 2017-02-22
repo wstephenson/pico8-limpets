@@ -467,6 +467,13 @@ function states.play:update()
 	local y = self.y
 	local grabbed = self.grabbed
 
+ -- scroll bg stars when in motion
+	if(mission.name=="piracy")then
+		for star in all(self.stars) do
+			star.x+=0.4
+			if(star.x>127)then star.x-=127 end
+		end
+	end
 
 	-- controls
 	self.txpos=false
