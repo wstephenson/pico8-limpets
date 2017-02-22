@@ -1,3 +1,6 @@
+BUG: recolor drone #1
+BUG: black particles on rescue fail
+BUG: can't advance after completing one rescue
 BUG: game death list layout
 BUG: drone name display in game
 BUG: items spawned inside shields
@@ -8,7 +11,7 @@ FX Flyaway effect once piracy complete
 #Ship gfx
  Flip the game
  More ships for different activities?
- Locate inactive drones better
+ #Locate inactive drones better
  Locate drone name and shopping list better
  Locate laser origin depending on ship and camera motion
 # Make drop zone configurable per activity

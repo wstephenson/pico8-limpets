@@ -364,8 +364,8 @@ function states.play:init()
 	self.lasery=0
 	self.laserson=7
 	self.lasersoff=2 -- fixme 8
-	self.x=64+self.lindex*8
-	self.y=108
+	self.x=60
+	self.y=105
 	self.vx=0
 	self.vy=0
 	self.tx=0
@@ -422,15 +422,22 @@ function states.play:draw()
 
 	draw_own_ship(self)
 
+	local spare=0
 	for i=1,#limpets do
 		local limpet=limpets[i]
+		local x
 		-- don't draw active limpet here
 		if(limpet==self.limpet)then goto continue end
-		local x=64+8*i
+		spare+=1
+		if(spare==1) then
+			x=21
+		else
+			x=100
+		end
 		local spritenum = (limpet.health>0 and i-1 or 25)
 		pal(13,limpet.fg)
 		pal(5,limpet.bg)
-		spr(spritenum, x, 108)
+		spr(spritenum,x,120)
 		pal()
   ::continue::
 	end
