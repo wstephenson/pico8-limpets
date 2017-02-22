@@ -544,19 +544,19 @@ function states.play:draw()
 		print("tx:"..self.tx, 0, 107, 7)
 		print("ty:"..self.ty, 45, 107, 7)
 		print("i:"..(self.object and self.object.c or '%'), 0, 114, 7)
-	else
-		print(self.limpet.name, 45, 120, 14)
 	end
+	print(self.limpet.name,96,2,9)
 end
 
 function states.play:draw_shopping_list()
 	local count=1
 	for reqt in all(mission.required) do
 		if(reqt.got < reqt.count) then
-			spr(reqt.obj,67+count*6,118)
+			spr(reqt.obj,2+(count-1)*7,1)
 			count+=1
 		end
 	end
+	rect(0,0,2+(count-1)*8,10,9)
 end
 
 function states.play:update()
