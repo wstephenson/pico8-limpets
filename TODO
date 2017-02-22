@@ -29,14 +29,18 @@ Different mission types
   They explode
   Consider adding as a hazard in other types
  Piracy
+  Cargo collision
+  Cargo sprites
   #Ships are in motion
   #Scrolling background
-   Ship thrust
+  #Ship thrust
   #Threat is from point defence
+   PDT damage
   #Repurposed mining laser targets victim's shields
   #Wait for target shields to drop
   #Cargo spawns from hatch
   #Target shield is deadly
+   Flyaway
 
  Fuel ratting(reversed game flow)
   Canisters are spawned one by one at own ship
