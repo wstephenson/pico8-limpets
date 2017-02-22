@@ -2,6 +2,7 @@ BUG: game death list layout
 BUG: drone name display in game
 BUG: items spawned inside shields
 FX when scoring
+FX Flyaway effect once piracy complete
 #Drone death
  death animation
 #Ship gfx
@@ -27,13 +28,17 @@ Different mission types
   They explode
   Consider adding as a hazard in other types
  Piracy
+  Ships are in motion
   Threat is from point defence
+  Repurposed mining laser targets victim's shields
   Wait for target shields to drop
+  Attacker flyaway
  Fuel ratting(reversed game flow)
   Canisters are spawned one by one at own ship
   Recipient has a decreasing fuel gauge
   Recipient flies off once full
   Threat is from fireballs
+  Recipient Flyaway
 #Splash screen
  Fluff
 #Gameover screen
