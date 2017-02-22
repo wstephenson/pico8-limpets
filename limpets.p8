@@ -66,6 +66,8 @@ function states.splash:init_activities_missions()
 			scooprect={60,103,68,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
 			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}},
+			init=function(state)
+			end,
 			draw_bg=function(state)
 				-- asteroid
 				circfill(64,-64,80,5)
@@ -110,38 +112,83 @@ function states.splash:init_activities_missions()
 				do_laser_check(state)
 			end
 			}
-	local collection={
+	activity.collection={
 			name="collection",
 			verb="collect",
 			scooprect={57,103,71,111},
 			objects={26,27,28,29,30,31},
-			missions={{{26,1}},{{27,2},{28,2}},{{29,3}}}}
+			missions={{{26,1}},{{27,2},{28,2}},{{29,3}}},
+			init=function(state)
+				init_static_objects(state)
+			end,
+			draw_bg=function(state)
+			end,
+			draw_hud=function(state)
+			end,
+			envt_update=function(state)
+			end,
+			envt_damage=function(state)
+			end
+	}
 	local rescue={
 			name="rescue",
 			verb="rescue",
 			scooprect={60,103,68,111},
 			objects={36},
-			missions={{{36,1}},{{36,2}},{{36,3}}}}
+			missions={{{36,1}},{{36,2}},{{36,3}}},
+			init=function(state)
+			end,
+			draw_bg=function(state)
+			end,
+			draw_hud=function(state)
+			end,
+			envt_update=function(state)
+			end,
+			envt_damage=function(state)
+				do_laser_check(state)
+			end
+	}
 	local fuelratting={
 			name="refuel",
 			verb="refuel",
 			scooprect={60,16,68,24},
 			objects={35},
-			missions={{{35,1}},{{35,2}},{{35,3}}}}
+			missions={{{35,1}},{{35,2}},{{35,3}}},
+			init=function(state)
+			end,
+			draw_bg=function(state)
+			end,
+			draw_hud=function(state)
+			end,
+			envt_update=function(state)
+			end,
+			envt_damage=function(state)
+				do_laser_check(state)
+			end
+	}
 	local piracy={
 			name="piracy",
 			verb="pirate",
 			scooprect={60,103,68,111},
 			objects={26},
 			missions={{{26,1}},{{26,2}},{{26,3}}},
+			init=function(state)
+			end,
+			draw_bg=function(state)
+			end,
+			draw_hud=function(state)
+			end,
 			envt_update=function(state)
 				update_laser(state)
+			end,
+			envt_damage=function(state)
+				do_laser_check(state)
 			end
 	}
+	add(activities,activity.collection)
 	add(activities,activity.mining)
 	add(activities,piracy)
 	add(activities,fuelratting)
-	add(activities,collection)
 	add(activities,rescue)
 end
 
@@ -249,36 +296,7 @@ function states.play:init()
 		add(self.stars,star)
 	end
 
-	if(mission.name=="collection" or mission.name=="rescue")then
-		-- create array of object types containing required ones
-		local objs={}
-		for i in all(mission.required) do
-			for j=1,i.count do
-				add(objs,i.obj)
-			end
-		end
-		-- particle type for mission
-		local material=0
-		if(mission.name=="rescue")then
-			material=2
-		else
-			if(mission.name=="collection")then
-				material=1
-			end
-		end
-
-		for i in all(objs) do
-			local newobj={}
-			newobj.x=rnd(100)+10
-			newobj.y=rnd(80)+20
-			newobj.vx=0
-			newobj.vy=0
-			newobj.c=i
-			newobj.ttl=-1
-			newobj.material=material
-			add(self.objects,newobj)
-		end
-	end
+	activity[mission.name].init(self)
 end
 
 function states.play:draw()
@@ -292,7 +310,7 @@ function states.play:draw()
 	local star=self.stars[i]
 		line(star.x,star.y,star.x,star.y,(objtimer*i%2==0) and 12 or 1)
 	end
- -- here goes nothing
+	-- here goes nothing
 	activity[mission.name].draw_bg(self)
 
 	if(mission.name=="piracy")then
@@ -1122,6 +1140,29 @@ function draw_rip_status(yorig,dead_list)
 		yorig+=6
 	end
 	return yorig
+end
+
+function init_static_objects(state)
+	-- create array of object types containing required ones
+	local objs={}
+	for i in all(mission.required) do
+		for j=1,i.count do
+			add(objs,i.obj)
+		end
+	end
+
+	-- particle type for mission
+	for i in all(objs) do
+		local obj={}
+		obj.x=rnd(100)+10
+		obj.y=rnd(80)+20
+		obj.vx=0
+		obj.vy=0
+		obj.c=i
+		obj.ttl=-1
+		obj.material=state.material
+		add(state.objects,obj)
+	end
 end
 
 function line_intersects_convex_poly(x1,y1,x2,y2,poly)
