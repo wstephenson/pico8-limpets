@@ -916,7 +916,7 @@ function states.play:hit_shield(sx,sy,sr,item)
 end
 
 function states.play:in_scoop()
-	return (self.object.x>mission.scooprect[1] and self.object.x<mission.scooprect[3] and self.object.y>mission.scooprect[2] and self.object.y<mission.scooprect[4])
+	return (self.object.x>=mission.scooprect[1] and self.object.x<=mission.scooprect[3] and self.object.y>=mission.scooprect[2] and self.object.y<=mission.scooprect[4])
 end
 
 function states.play:is_mission_complete(dropped_object)
