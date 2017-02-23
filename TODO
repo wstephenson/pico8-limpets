@@ -45,9 +45,9 @@ Different mission types
   #Cargo spawns from hatch
   #Target shield is deadly
    Attacker Flyaway
- Fuel ratting(reversed game flow)
+ #Fuel ratting(reversed game flow)
   #Canisters are spawned one by one at own ship
-  Recipient has a decreasing fuel gauge
+  #Recipient has a decreasing fuel gauge
   #Threat is from fireballs
   Recipient Flyaway
 #Splash screen
