@@ -787,7 +787,7 @@ function states.play:update()
 			end
 		end
 		-- hit shield
-		if(self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object)then
+		if(item.c!=35 and self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object)then
 			self.shldf=true
 			dead=true
 		end
