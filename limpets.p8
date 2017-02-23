@@ -196,7 +196,6 @@ function states.splash:init_activities_missions()
 			objects={35},
 			missions={{{35,1}},{{35,2}},{{35,3}}},
 			init=function(state)
-				init_static_objects(state)
 			end,
 			draw_bg=function(state)
 				draw_hauler()
@@ -204,6 +203,7 @@ function states.splash:init_activities_missions()
 			draw_hud=function(state)
 			end,
 			spawn_objects=function(state)
+				state:do_fuel_bubble()
 			end,
 			envt_update=function(state)
 			end,
@@ -372,6 +372,8 @@ function states.play:init()
 	self.lasery=0
 	self.laserson=7
 	self.lasersoff=2 -- fixme 8
+	self.fuel_bubble=nil
+	self.last_fuel_bubble=0
 	self.x=60
 	self.y=105
 	self.vx=0
@@ -727,6 +729,7 @@ function states.play:update()
 				self.next_state="summary"
 				update_state()
 			end
+			if(self.object==self.fuel_bubble) self:remove_fuel_bubble()
 			del(self.objects,self.object)
 			self.object=nil
 		else
@@ -766,10 +769,12 @@ function states.play:update()
 			dead=true
 		end
 		-- out of bounds
-		if(item.x>128 or item.y>128 or item.ttl==0)then
+		if(item.x<-8 or item.x>128 or item.y<-8 or item.y>128 or item.ttl==0)then
+			if(item==self.fuel_bubble) self:remove_fuel_bubble()
 			del(self.objects,item)
 		end
 		if(dead)then
+			if(item==self.fuel_bubble) self:remove_fuel_bubble()
 			sfx(9)
 			self:make_explosion(item,item.vx,-item.vy)
 			del(self.objects,item)
@@ -874,6 +879,13 @@ function states.play:do_drone_score(item)
 	end
 end
 
+function states.play:do_fuel_bubble()
+	-- after 3 seconds with no bubble, generate a bubble
+	if(self.fuel_bubble==nil and objtimer-self.last_fuel_bubble>3*30)then
+		self.fuel_bubble=spawn_object(self,48,90,rnd(1)-0.5,-(rnd(0.8)+0.2),35,-1,3,true)
+	end
+end
+
 function states.play:hit_shield(sx,sy,sr,item)
 	local i_off_x=item.x-sx
 	local i_off_y=item.y-sy
@@ -908,6 +920,11 @@ end
 
 function states.play:laser_on()
 	return self.laser > 0 and self.limpet.health > 0
+end
+
+function states.play:remove_fuel_bubble()
+	self.last_fuel_bubble=objtimer
+	self.fuel_bubble=nil
 end
 
 function spawn_object(state,x,y,vx,vy,c,ttl,material,collision)
