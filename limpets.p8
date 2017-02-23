@@ -1231,6 +1231,8 @@ function draw_limpets_status(yorig,score,active)
 		if(active == i and objtimer % 30 < 15)then
 			spr(34,0,yorig)
 		end
+		-- HACK
+		if(limpet.health<0) then limpet.health=0 end
 		print(""..i..". "..limpet.name.." : "..limpet.health.."%",4,yorig,limpet.health>0 and limpet.fg or 5)
 		yorig+=6
 		if(score and #limpet.score>0)then
