@@ -905,7 +905,7 @@ end
 function states.play:do_fuel_bubble()
 	-- after 3 seconds with no bubble, generate a bubble
 	if(self.fuel_bubble==nil and objtimer-self.last_fuel_bubble>3*30)then
-		self.fuel_bubble=spawn_object(self,48,90,rnd(1)-0.5,-(rnd(0.8)+0.2),35,-1,3,true)
+		self.fuel_bubble=spawn_object(self,32,106,rnd(1)-0.5,-(rnd(0.8)+0.2),35,-1,3,true)
 	end
 end
 
