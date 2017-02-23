@@ -1164,18 +1164,20 @@ function distance(x1,y1,x2,y2)
 end
 
 function do_laser_check(state)
-	-- has laser hit limpet?
-	local hit
-	local hx
-	local hy
-	hit,hx,hy=state:laser_hit()
-	if(hit)then
-		-- only do laser damage on every 3rd update
-		if(objtimer % 3 == 0)then
-			state:make_explosion({x=hx,y=hy},0,0)
-			state.limpet.health-=state:laser_damage()
-			if(state.limpet.health<0)then
-				state:do_death()
+	if(state:laser_on())then
+		-- has laser hit limpet?
+		local hit
+		local hx
+		local hy
+		hit,hx,hy=state:laser_hit()
+		if(hit)then
+			-- only do laser damage on every 3rd update
+			if(objtimer % 3 == 0)then
+				state:make_explosion({x=hx,y=hy},0,0)
+				state.limpet.health-=state:laser_damage()
+				if(state.limpet.health<0)then
+					state:do_death()
+				end
 			end
 		end
 	end
