@@ -537,6 +537,10 @@ function states.play:draw()
 		if(p.kind==2)then
 			pcolor = p.ttl > 12 and 8 or (p.ttl > 7 and 2 or 1)
 		end
+		-- fuel
+		if(p.kind==3)then
+			pcolor = p.ttl > 12 and ((rnd(1)>0.5) and 11 or 10) or (p.ttl > 7 and 3 or 5)
+		end
 		line(p.x,p.y,p.x-p.xv,p.y-p.yv,pcolor)
 	end
 
