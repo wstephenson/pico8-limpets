@@ -76,7 +76,7 @@ function states.splash:init_activities_missions()
 			material=0,
 			scooprect={57,103,71,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
-			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}},
+			missions={{{16,1,1}},{{18,2,1},{20,2,1}},{{21,3,1},{18,2,1},{19,1,1}}},
 			init=function(state)
 			end,
 			draw_bg=function(state)
@@ -134,7 +134,7 @@ function states.splash:init_activities_missions()
 			material=1,
 			scooprect={57,103,71,111},
 			objects={26,27,28,29,30,31},
-			missions={{{26,1}},{{27,2},{28,2}},{{29,3}}},
+			missions={{{26,1,2}},{{27,2,3},{28,2,3}},{{29,3,3}}},
 			init=function(state)
 				init_static_objects(state)
 			end,
@@ -157,7 +157,7 @@ function states.splash:init_activities_missions()
 			material=2,
 			scooprect={57,103,71,111},
 			objects={36},
-			missions={{{36,1}},{{36,2}},{{36,3}}},
+			missions={{{36,1,3}},{{36,2,3}},{{36,3,3}}},
 			init=function(state)
 				init_static_objects(state,true)
 			end,
@@ -185,7 +185,9 @@ function states.splash:init_activities_missions()
 				do_laser_check(state)
 			end,
 			check_fail=function(state)
-				return not state:critical_objects_present()
+				-- TODO fixme
+				--return not state:critical_objects_present()
+				return false
 			end
 	}
 	activity.fuelratting={
@@ -194,7 +196,7 @@ function states.splash:init_activities_missions()
 			material=0,
 			scooprect={46,17,58,25},
 			objects={35},
-			missions={{{35,1}},{{35,2}},{{35,3}}},
+			missions={{{35,1,1}},{{35,2,1}},{{35,3,1}}},
 			init=function(state)
 			end,
 			draw_bg=function(state)
@@ -229,7 +231,7 @@ function states.splash:init_activities_missions()
 			material=1,
 			scooprect={60,103,68,111},
 			objects={26},
-			missions={{{26,1}},{{26,2}},{{26,3}}},
+			missions={{{26,1,1}},{{26,2,1}},{{26,3,1}}},
 			init=function(state)
 			end,
 			draw_bg=function(state)
@@ -302,11 +304,11 @@ function states.splash:init_activities_missions()
 			check_fail=function(state)
 			end
 	}
+	add(activities,activity.collection)
+	add(activities,activity.rescue)
 	add(activities,activity.mining)
 	add(activities,activity.fuelratting)
-	add(activities,activity.rescue)
 	add(activities,activity.piracy)
-	add(activities,activity.collection)
 end
 
 function states.briefing:init()
@@ -354,8 +356,8 @@ function states.briefing:init_mission()
 	mission.complete=false
 	printh("mission: "..mission.name..", verb: "..mission.verb)
 	for m in all(mission_data) do
-		add(mission.required,{obj=m[1],count=m[2],got=0})
-		printh("  obj: "..m[1]..", count: "..m[2])
+		add(mission.required,{obj=m[1],goal=m[2],total=m[3],got=0})
+		printh("  obj: "..m[1]..", goal: "..m[2]..", total: "..m[3])
 	end
 end
 
@@ -579,7 +581,7 @@ end
 function states.play:draw_shopping_list()
 	local count=1
 	for reqt in all(mission.required) do
-		if(reqt.got < reqt.count) then
+		if(reqt.got < reqt.goal) then
 			spr(reqt.obj,2+(count-1)*7,1)
 			count+=1
 		end
@@ -820,7 +822,7 @@ function states.play:critical_objects_present()
 	-- this needs to be updated on scoop
 	local criticals_outstanding={}
 	for i in all(mission.required) do
-		for j=1,i.count do
+		for j=1,i.goal do
 			add(criticals_outstanding,i.obj)
 		end
 	end
@@ -919,7 +921,7 @@ end
 function states.play:is_mission_complete(dropped_object)
 	local complete = true
 	for i in all(mission.required) do
-		complete = complete and (i.count<=i.got)
+		complete = complete and (i.goal<=i.got)
 	end
 	mission.complete=complete
 	return complete
@@ -1254,7 +1256,7 @@ function draw_mission_status(yorig, retro)
 		local i=requirement
 		spr(requirement.obj,4,yorig)
 		print(' x ',12,yorig,12)
-		print(requirement.count.." ("..requirement.got..")",24,yorig,requirement.got>=requirement.count and 11 or 8)
+		print(requirement.goal.." ("..requirement.got..")",24,yorig,requirement.got>=requirement.goal and 11 or 8)
 		yorig+=6
 	end
 	if(mission.complete)then
@@ -1282,7 +1284,7 @@ function init_static_objects(state,collision)
 	-- create array of object types containing required ones
 	local objs={}
 	for i in all(mission.required) do
-		for j=1,i.count do
+		for j=1,i.total do
 			add(objs,i.obj)
 		end
 	end
