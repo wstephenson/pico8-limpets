@@ -203,16 +203,20 @@ function states.splash:init_activities_missions()
 			draw_hud=function(state)
 			end,
 			spawn_objects=function(state)
-				if(objtimer % (20+flr(rnd(5)-2.5)) == 0)then
+				if(objtimer % (45+flr(rnd(15)-7.5)) == 0)then
 					spawn_object(state,0,32+rnd(64),rnd(2)+1,rnd(1)-0.5,42,-1,0,true)
 				end
 				state:do_fuel_bubble()
 			end,
 			envt_update=function(state)
+				if(objtimer%5==0)then --TODO should be 30
+					state.oxygen-=1
+				end
 			end,
 			envt_damage=function(state)
 			end,
 			check_fail=function(state)
+				return state.oxygen<=0
 			end
 	}
 	activity.piracy={
@@ -377,6 +381,7 @@ function states.play:init()
 	self.lasersoff=2 -- fixme 8
 	self.fuel_bubble=nil
 	self.last_fuel_bubble=0
+	self.oxygen=45
 	self.x=60
 	self.y=105
 	self.vx=0
