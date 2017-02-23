@@ -709,21 +709,8 @@ function states.play:update()
 		item.y += item.vy
 		item.vx-=item.vx/(rnd(25)+75)
 		item.vy-=item.vy/(rnd(25)+75)
-		if(item.ttl!=-1)then
+		if(item.ttl!=-1 and item!=self.object)then
 			item.ttl-=1
-		end
-		local dead=false
-		if(self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object) then
-			self.shldf=true
-			dead=true
-		end
-		if(item.x>128 or item.y>128 or item.ttl==0)then
-			dead=true
-		end
-		if(dead)then
-			sfx(9)
-			self:make_explosion(item,item.vx,-item.vy)
-			del(self.objects,item)
 		end
 	end
 
@@ -768,10 +755,23 @@ function states.play:update()
 				if(self.limpet.health<0)then
 					self:do_death()
 				end
-				sfx(9)
-				self:make_explosion(item,item.vx,item.vy)
-				del(self.objects,item)
+				dead=true
 			end
+		end
+		-- hit shield
+		local dead=false
+		if(self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object)then
+			self.shldf=true
+			dead=true
+		end
+		-- out of bounds
+		if(item.x>128 or item.y>128 or item.ttl==0)then
+			del(self.objects,item)
+		end
+		if(dead)then
+			sfx(9)
+			self:make_explosion(item,item.vx,-item.vy)
+			del(self.objects,item)
 		end
 	end
 
