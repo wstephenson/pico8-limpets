@@ -302,9 +302,9 @@ function states.splash:init_activities_missions()
 			check_fail=function(state)
 			end
 	}
+	add(activities,activity.mining)
 	add(activities,activity.fuelratting)
 	add(activities,activity.rescue)
-	add(activities,activity.mining)
 	add(activities,activity.piracy)
 	add(activities,activity.collection)
 end
@@ -383,7 +383,8 @@ function states.play:init()
 	self.laserx=0
 	self.lasery=0
 	self.laserson=7
-	self.lasersoff=2 -- fixme 8
+	self.lasersoff=8
+	self.material=mission.material
 	self.fuel_bubble=nil
 	self.last_fuel_bubble=0
 	self.oxygen=20
