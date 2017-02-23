@@ -1233,7 +1233,7 @@ function draw_mission_status(yorig, retro)
 	yorig=yorig or 0
 	retro=retro or false
 	local pc=9
-	print("your "..((mission_number==0 or retro) and "" or "next ").."mission "..(retro and "was " or "is ").."to "..mission.verb,0,yorig,pc)
+	print(((mission_number==0 or retro) and "" or "next, ")..mission.verb,0,yorig,pc)
 	yorig+=6
 	for j=1,#mission.required do
 		local requirement=mission.required[j]
