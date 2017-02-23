@@ -456,7 +456,7 @@ function states.play:draw()
 
 	-- grabbed object
 	if(self.object != nil)then
-	spr(self.object.c,self.x,self.y-8)
+	spr(self.object.c,self.object.x,self.object.y)
 	end
 
 	-- grabber
@@ -689,6 +689,12 @@ function states.play:update()
 
 	activity[mission.name].envt_damage(self)
 
+ -- move held object
+	if(self.object)then
+		self.object.x=self.x
+		self.object.y=self.y-8
+	end
+
 	-- move objects
 	for item in all(self.objects) do
 		-- piracy: ships in motion
@@ -870,7 +876,7 @@ function states.play:hit_shield(sx,sy,sr,item)
 end
 
 function states.play:in_scoop()
-	return (self.x>mission.scooprect[1] and self.x<mission.scooprect[3] and self.y>mission.scooprect[2] and self.y<mission.scooprect[4])
+	return (self.object.x>mission.scooprect[1] and self.object.x<mission.scooprect[3] and self.object.y>mission.scooprect[2] and self.object.y<mission.scooprect[4])
 end
 
 function states.play:is_mission_complete(dropped_object)
