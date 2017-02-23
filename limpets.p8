@@ -757,6 +757,7 @@ function states.play:update()
 				self.object=item
 			end
 		end
+		local dead=false
 		-- crashes
 		if(item.collision and item!=self.object)then
 			if(item.x > x-6 and item.x < x+6 and item.y > y-6 and item.y < y+6)then
@@ -768,7 +769,6 @@ function states.play:update()
 			end
 		end
 		-- hit shield
-		local dead=false
 		if(self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object)then
 			self.shldf=true
 			dead=true
