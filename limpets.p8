@@ -343,7 +343,7 @@ function states.briefing:init_mission()
 	local missioncount = #activities[1].missions
 	local activity_i=flr(mission_number / missioncount)+1
 	local mission_i=(mission_number % missioncount)+1
-	printh("mission_number "..mission_number..", #missions "..missioncount..", activity_i "..activity_i..", mission_i "..mission_i)
+	--printh("mission_number "..mission_number..", #missions "..missioncount..", activity_i "..activity_i..", mission_i "..mission_i)
 	local activity=activities[activity_i]
 	local mission_data=activity.missions[mission_i]
 	mission={}
@@ -354,10 +354,10 @@ function states.briefing:init_mission()
 	mission.scooprect=activity.scooprect
 	mission.required={}
 	mission.complete=false
-	printh("mission: "..mission.name..", verb: "..mission.verb)
+	--printh("mission: "..mission.name..", verb: "..mission.verb)
 	for m in all(mission_data) do
 		add(mission.required,{obj=m[1],goal=m[2],total=m[3],got=0})
-		printh("  obj: "..m[1]..", goal: "..m[2]..", total: "..m[3])
+		--printh("  obj: "..m[1]..", goal: "..m[2]..", total: "..m[3])
 	end
 end
 
@@ -950,7 +950,6 @@ function states.play:remove_fuel_bubble()
 end
 
 function spawn_object(state,x,y,vx,vy,c,ttl,material,collision)
-	printh("collision: "..(collision and "true" or "false").."material: "..material)
 	local obj={}
 	obj.x=x
 	obj.y=y
@@ -1114,7 +1113,7 @@ function intercept(src,dst,v)
 	if(ts != nil)then
 		local t0=ts[1]
 		local t1=ts[2]
-		printh("t0: "..t0..",t1: "..t1)
+		--printh("t0: "..t0..",t1: "..t1)
 		local t=min(t0,t1)
 		if(t<0)then
 			t=max(t0,t1)
@@ -1131,7 +1130,7 @@ function quad(a,b,c)
 	if(abs(a)<0.00001)then
 		if(abs(b)<0.00001)then
 			if (abs(c)<0.00001) then
-				printh("a,b,c are zero")
+				--printh("a,b,c are zero")
 				sol={0,0}
 			end
 		else
@@ -1145,7 +1144,7 @@ function quad(a,b,c)
 			a=2*a
 			sol={(-b-disc)/a,(-b+disc)/a}
 		else
-			printh("disc is negative")
+			--printh("disc is negative")
 		end
 	end
 	return sol
