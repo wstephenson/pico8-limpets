@@ -341,10 +341,10 @@ function states.briefing:init_mission()
 	-- assumes game is made up of n activities x m missions
 	-- this will break if activities do not each have the same number of missions
 	local missioncount = #activities[1].missions
-	local activity_i=flr(mission_number / missioncount)+1
-	local mission_i=(mission_number % missioncount)+1
-	--printh("mission_number "..mission_number..", #missions "..missioncount..", activity_i "..activity_i..", mission_i "..mission_i)
+	local mission_i=flr(mission_number / missioncount)+1
+	local activity_i=(mission_number % #activities)+1
 	local activity=activities[activity_i]
+	printh("mission_number "..mission_number..", #activities "..#activities..", activity_i "..activity_i..", name "..activity.name..", mission_i "..mission_i)
 	local mission_data=activity.missions[mission_i]
 	mission={}
 	mission.name=activity.name
