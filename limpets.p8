@@ -74,7 +74,7 @@ function states.splash:init_activities_missions()
 			name="mining",
 			verb="mine",
 			material=0,
-			scooprect={60,103,68,111}, -- aabb rect coords
+			scooprect={57,103,71,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
 			missions={{{16,1}},{{18,2},{20,2}},{{21,3},{18,2},{19,1}}},
 			init=function(state)
@@ -155,7 +155,7 @@ function states.splash:init_activities_missions()
 			name="rescue",
 			verb="rescue",
 			material=2,
-			scooprect={60,103,68,111},
+			scooprect={57,103,71,111},
 			objects={36},
 			missions={{{36,1}},{{36,2}},{{36,3}}},
 			init=function(state)

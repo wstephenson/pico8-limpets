@@ -1,6 +1,7 @@
 #BUG: recolor drone #1
 #BUG: black particles on drone hit
-BUG: can't advance after completing one rescue - spaceman dies on prev drop
+BUG: mining laser hits while off
+X BUG: can't advance after completing one rescue - spaceman dies on prev drop
 BUG: game death list layout
 BUG: items spawned inside shields
 FX when scoring
@@ -25,7 +26,7 @@ Different mission types
   #Add collidable flag on objects
   TTL, damage on rescuees
   #Fail and repeat if too many killed
-*  Think of a way to represent spawned but not required objs
+  #Think of a way to represent spawned but not required objs
      in mission data structure
  Mines
   They explode
