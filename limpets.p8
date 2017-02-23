@@ -192,7 +192,7 @@ function states.splash:init_activities_missions()
 			name="fuelratting",
 			verb="refuel",
 			material=0,
-			scooprect={44,16,52,24},
+			scooprect={46,17,58,25},
 			objects={35},
 			missions={{{35,1}},{{35,2}},{{35,3}}},
 			init=function(state)
