@@ -73,6 +73,7 @@ function states.splash:init_activities_missions()
 	activity.mining={
 			name="mining",
 			verb="mine",
+			description={"grab correct minerals ","","drop in scoop","","avoid mining laser"},
 			material=0,
 			scooprect={57,101,71,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
@@ -131,6 +132,7 @@ function states.splash:init_activities_missions()
 	activity.collection={
 			name="collection",
 			verb="collect",
+			description={"collect asteroids","","drop them in scoop"},
 			material=1,
 			scooprect={57,101,71,111},
 			objects={26,27,28,29,30,31},
@@ -154,6 +156,7 @@ function states.splash:init_activities_missions()
 	activity.rescue={
 			name="rescue",
 			verb="rescue",
+			description={"rescue lost humans","","drop them in scoop"},
 			material=2,
 			scooprect={57,101,71,111},
 			objects={36},
@@ -193,6 +196,7 @@ function states.splash:init_activities_missions()
 	activity.fuelratting={
 			name="fuelratting",
 			verb="refuel",
+			description={"collect fuel bubbles","","refuel stranded trader"},
 			material=0,
 			scooprect={46,17,58,25},
 			objects={35},
@@ -228,6 +232,7 @@ function states.splash:init_activities_missions()
 	activity.piracy={
 			name="piracy",
 			verb="pirate",
+			description={"wait for shield drop","","collect dropped cargo","","avoid point defence"},
 			material=1,
 			scooprect={57,101,71,111},
 			objects={43},
@@ -314,6 +319,7 @@ end
 
 function states.briefing:init()
 	self.next_state="play"
+	self.page=1
 	populate_limpets()
 	self:init_mission()
 end
@@ -323,8 +329,16 @@ function states.briefing:draw()
 	print("briefing",48,8,9)
 	draw_ui_frame(9)
 	camera(-8,-8)
-	local h=draw_limpets_status(12,false,current_limpet)
-	draw_mission_status(h+6)
+	if(self.page==1)then
+		local h=draw_limpets_status(12,false,current_limpet)
+		draw_mission_status(h+6)
+	else
+		printc(18,mission.name)
+		local h=52-#mission.description*6/2
+		for line in all(mission.description) do
+			h+=printc(h,line)
+		end
+	end
 	camera()
 end
 
@@ -334,7 +348,11 @@ function states.briefing:update()
 		current_limpet=next_live_limpet_index()
 	end
 	if(btnp(4) or btnp(5))then
-		update_state()
+		if(self.page==1)then
+			self.page+=1
+		else
+			update_state()
+		end
 	end
 end
 
@@ -351,6 +369,7 @@ function states.briefing:init_mission()
 	mission.name=activity.name
 	mission.objects=activity.objects
 	mission.verb=activity.verb
+	mission.description=activity.description
 	mission.material=activity.material
 	mission.scooprect=activity.scooprect
 	mission.required={}
@@ -1283,6 +1302,13 @@ function draw_rip_status(yorig,dead_list)
 		yorig+=6
 	end
 	return yorig
+end
+
+function printc(yorig,string,color)
+	color=color or 9
+	local x=64-4-(#string*4)/2
+	print(string,x,yorig,color)
+	return 6
 end
 
 function init_static_objects(state,collision)
