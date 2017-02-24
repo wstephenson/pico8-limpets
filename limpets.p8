@@ -73,7 +73,7 @@ function states.splash:init_activities_missions()
 	activity.mining={
 			name="mining",
 			verb="mine",
-			description={"grab correct minerals ","","drop in scoop","","avoid mining laser"},
+			description={"grab required minerals ","","drop in scoop","","avoid mining laser"},
 			material=0,
 			scooprect={57,101,71,111}, -- aabb rect coords
 			objects={16,17,18,19,20,21},
@@ -132,7 +132,7 @@ function states.splash:init_activities_missions()
 	activity.collection={
 			name="collection",
 			verb="collect",
-			description={"collect asteroids","","drop them in scoop"},
+			description={"collect asteroids","","required shown at top left","","drop them in scoop"},
 			material=1,
 			scooprect={57,101,71,111},
 			objects={26,27,28,29,30,31},
@@ -340,6 +340,7 @@ function states.briefing:draw()
 		end
 	end
 	camera()
+	if(self.page==2)then draw_drop_indicator(self) end
 end
 
 function states.briefing:update()
@@ -354,6 +355,10 @@ function states.briefing:update()
 			update_state()
 		end
 	end
+end
+
+function states.briefing:in_scoop()
+	return false;
 end
 
 function states.briefing:init_mission()
@@ -1218,18 +1223,7 @@ function draw_own_ship(state)
 	map(0,0,32,112,8,2)
 	-- drop indicator
 	if(state.object and ((objtimer%15)<7 or (objtimer%10==0 and state:in_scoop())))then
-		local sr=mission.scooprect
-		local icolor=9
-		if(state:in_scoop())then
-			icolor=12
-			sfx(11)
-		else
-			sfx(10)
-		end
-		line(sr[1],sr[2],sr[1]-1,sr[2]-1,icolor)
-		line(sr[1],sr[4],sr[1]-1,sr[4]+1,icolor)
-		line(sr[3],sr[2],sr[3]+1,sr[2]-1,icolor)
-		line(sr[3],sr[4],sr[3]+1,sr[4]+1,icolor)
+		draw_drop_indicator(state)
 	end
 	local shield_color=1
 	if(state.shldf)then
@@ -1239,6 +1233,21 @@ function draw_own_ship(state)
 	-- ship shield
 	circ(state.shldx, state.shldy, state.shldr, shield_color)
 	camera()
+end
+
+function draw_drop_indicator(state)
+	local sr=mission.scooprect
+	local icolor=9
+	if(state:in_scoop())then
+		icolor=12
+		sfx(11)
+	else
+		sfx(10)
+	end
+	line(sr[1],sr[2],sr[1]-1,sr[2]-1,icolor)
+	line(sr[1],sr[4],sr[1]-1,sr[4]+1,icolor)
+	line(sr[3],sr[2],sr[3]+1,sr[2]-1,icolor)
+	line(sr[3],sr[4],sr[3]+1,sr[4]+1,icolor)
 end
 
 function draw_limpets_status(yorig,score,active)
