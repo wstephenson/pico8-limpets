@@ -491,7 +491,7 @@ function states.play:draw()
 		local spritenum = (limpet.health>0 and i-1 or 25)
 		pal(13,limpet.fg)
 		pal(5,limpet.bg)
-		spr(spritenum,13+7*spare,120)
+		spr(spritenum,9*(spare-1),18)
 		pal()
   ::continue::
 	end
@@ -603,7 +603,7 @@ function states.play:draw()
 		print("ty:"..self.ty, 45, 107, 7)
 		print("i:"..(self.object and self.object.c or '%'), 0, 114, 7)
 	end
-	print(self.limpet.name,0,12,9)
+	print(self.limpet.name,0,12,self.limpet.fg)
 end
 
 function states.play:draw_shopping_list()
