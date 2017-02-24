@@ -1315,7 +1315,7 @@ end
 
 function printc(yorig,string,color)
 	color=color or 9
-	local x=64-4-(#string*4)/2
+	local x=64-8-(#string*4)/2
 	print(string,x,yorig,color)
 	return 6
 end
