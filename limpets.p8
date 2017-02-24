@@ -1241,11 +1241,14 @@ end
 function draw_drop_indicator(state)
 	local sr=mission.scooprect
 	local icolor=9
-	if(state:in_scoop())then
-		icolor=12
-		sfx(11)
-	else
-		sfx(10)
+	if(state==states.play)then
+		if(state:in_scoop())then
+			icolor=12
+			sfx(11)
+		else
+			icolor=9
+			sfx(10)
+		end
 	end
 	line(sr[1],sr[2],sr[1]-1,sr[2]-1,icolor)
 	line(sr[1],sr[4],sr[1]-1,sr[4]+1,icolor)
