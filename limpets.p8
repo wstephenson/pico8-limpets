@@ -388,7 +388,6 @@ end
 
 function states.play:init()
 	sfx(6)
-	objtimer=0
 	tinc=0.05
 	tdec=tinc*2
 	tmax=1
@@ -436,6 +435,10 @@ function states.play:init()
 	self.objects={}
 	self.stars={}
 	self.dead_this_mission={}
+
+ -- mining laser starts on
+	objtimer=self.laserson*30
+
 	--local testrock={}
 	--testrock.x = 64
 	--testrock.y = 32
