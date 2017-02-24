@@ -631,7 +631,7 @@ function states.play:update()
 	self.tyneg=false
 
 	if(self.limpet.health>0)then
-		if(btn(4)) then
+		if(btn(4) or btn(5))then
 			if(not grabbed and self.grabber_cooldown==0) then
 				sfx(0)
 				grabbed = true
