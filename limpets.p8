@@ -813,18 +813,22 @@ function states.play:update()
 				dead=true
 			end
 		end
+		-- out of bounds, prune silently
+		if(item.x<-8 or item.x>128 or item.y<-8 or item.y>128)then
+			if(item==self.fuel_bubble)then self:remove_fuel_bubble() end
+			del(self.objects,item)
+		end
 		-- hit shield
 		if(item.c!=35 and self:hit_shield(self.shldx,self.shldy,self.shldr,item) and item!=self.object)then
 			self.shldf=true
 			dead=true
 		end
-		-- out of bounds
-		if(item.x<-8 or item.x>128 or item.y<-8 or item.y>128 or item.ttl==0)then
-			if(item==self.fuel_bubble) self:remove_fuel_bubble()
-			del(self.objects,item)
+		-- too old
+		if(item.ttl==0)then
+			dead=true
 		end
 		if(dead)then
-			if(item==self.fuel_bubble) self:remove_fuel_bubble()
+			if(item==self.fuel_bubble)then self:remove_fuel_bubble() end
 			sfx(9)
 			self:make_explosion(item,item.vx,-item.vy)
 			del(self.objects,item)
