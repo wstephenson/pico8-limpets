@@ -27,7 +27,7 @@ objtimer=0
 --limpet list
 limpets={}
 current_limpet=0
-names={"huey","dewey","louie","tick","trick","track","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","andrea","caroline","sharon","jim"}
+names={"huey","dewey","louie","david","mike","sandy","adam","eddie","steve","ed","bo","zac","dale","groucho","chico","zeppo","harpo","alvin","simon","theodore","curly","larry","moe","barry","robin","maurice","andrea","caroline","sharon","jim","francis","joey","david","kim"}
 limpet_colors={{9,4},{10,4},{12,1},{14,2},{11,3},{13,5},{8,3},{7,5}}
 --mission status
 mission={}
