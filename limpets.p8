@@ -56,7 +56,7 @@ function states.splash:draw()
 	print("avoid laser",4,48,pc)
 
 	print("‹‘”ƒ to control thrust",4,60,pc)
-	print("hold — (z key) to grab",4,66,pc)
+	print("Ž (z key) to grab",4,66,pc)
 
 	print("get correct item to refuel",4,78,pc)
 	print("complete mission to restock",4,84,pc)
